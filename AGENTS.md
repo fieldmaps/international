@@ -201,7 +201,7 @@ Push with `--push` / `PUSH=1`: after `portolan check`, `_04_catalog.finalize()` 
 uv run python -c 'from app.config import catalog_dir; from app._04_catalog import fieldmaps_publish as p; p.push(catalog_dir, exclude=("*/gaul/*",))'
 ```
 
-`app/_04_catalog/fieldmaps_publish.py` is kept byte-identical with `fieldmaps/subnational`; change it in both repos.
+`app/_04_catalog/fieldmaps_publish.py` is kept byte-identical with `fieldmaps/subnational` and `OCHA-DAP/cod-site`; change it in all three repos.
 
 ## Coding preferences
 
