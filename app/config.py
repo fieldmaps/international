@@ -43,6 +43,7 @@ parser.add_argument(
     choices=["lsib", "gaul"],
     help="Boundary source (default: lsib; gaul is a local-only experiment).",
 )
+parser.add_argument("--push", **_bool_flag("PUSH"))
 args = parser.parse_args()
 
 step = args.step

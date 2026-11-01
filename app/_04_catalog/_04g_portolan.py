@@ -1,32 +1,16 @@
 """Build PMTiles with tylertoo and register each collection with portolan."""
 
-import json
-import subprocess
 from logging import getLogger
 
 import tylertoo
 from duckdb import DuckDBPyConnection
 
-from app.config import catalog_dir, geoms, tmp_dir, views_of
+from app.config import args, catalog_dir, geoms, tmp_dir, views_of
 
+from . import fieldmaps_publish
 from ._04d_parquet import catalog_parquet
 
 logger = getLogger(__name__)
-
-
-def _portolan(*args: str) -> dict:
-    result = subprocess.run(
-        ["portolan", "--format", "json", *args],
-        cwd=catalog_dir,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    envelope = json.loads(result.stdout)
-    if not envelope["success"]:
-        msg = f"portolan {args[0]} failed: {envelope['errors']}"
-        raise RuntimeError(msg)
-    return envelope
 
 
 def main(conn: DuckDBPyConnection, land: str) -> None:
@@ -57,7 +41,8 @@ def main(conn: DuckDBPyConnection, land: str) -> None:
             wld_date = conn.execute(
                 f"SELECT max(wld_date) FROM read_parquet('{parquet}')"
             ).fetchall()[0][0]
-            _portolan(
+            fieldmaps_publish.run(
+                catalog_dir,
                 "add",
                 str(parquet.parent.relative_to(catalog_dir)),
                 "--pmtiles",
@@ -68,6 +53,8 @@ def main(conn: DuckDBPyConnection, land: str) -> None:
 
 
 def finalize() -> None:
-    """Validate the whole catalog against the Portolan spec."""
-    _portolan("check", "--data-scope", "local")
+    """Validate the whole catalog, then push it to source.coop if --push is set."""
+    fieldmaps_publish.run(catalog_dir, "check", "--data-scope", "local")
     logger.info("check")
+    if args.push:
+        fieldmaps_publish.push(catalog_dir, exclude=("*/gaul/*",))
