@@ -122,9 +122,15 @@ def main(conn: DuckDBPyConnection, land: str, world: str) -> None:
 
     conn.execute(f'DROP TABLE IF EXISTS "{tmp}"')
 
+    # line_type overrides in the CSV; otherwise derived from LSIB status.
     conn.execute(f"""--sql
         UPDATE "{out}"
-        SET rank = COALESCE("rank_{world}", rank)
+        SET rank = COALESCE("rank_{world}", rank),
+            line_type = COALESCE(line_type, CASE status
+                WHEN 'International Boundary' THEN 'international'
+                WHEN 'Other Line of International Separation' THEN 'armistice'
+                WHEN 'Special Line' THEN 'special'
+            END)
     """)
 
     for wld in world_views:

@@ -13,7 +13,8 @@
     {
       "rel": "parent",
       "href": "../catalog.json",
-      "type": "application/json"
+      "type": "application/json",
+      "title": "Disaggregated view"
     },
     {
       "rel": "agents",
@@ -97,8 +98,8 @@
     "adm0_points": {
       "href": "./adm0_points.parquet",
       "type": "application/vnd.apache.parquet",
-      "file:size": 27108,
-      "file:checksum": "12203dbb7e0a5436e63216f319078d550ab51a8888748bb7ba2cf51300212731cded",
+      "file:size": 27358,
+      "file:checksum": "122028d6fb8de575d3fa9374192430f70f50a52209d2bf27678503b05155a17cb34a",
       "roles": [
         "data"
       ]
@@ -107,31 +108,40 @@
       "href": "./adm0_points.pmtiles",
       "type": "application/vnd.pmtiles",
       "title": "adm0_points (vector tiles)",
+      "file:size": 288550,
+      "file:checksum": "12208ea00ec253050d6b979de6ebe55eade9df25281cbdd66fd65f089cfaab0c01e6",
       "roles": [
         "visual"
-      ],
-      "file:size": 277982,
-      "file:checksum": "122060292879d9342c0ec86509519f9afdfdd0093b42ccc3ef6976b4bfb2c86a6b65"
+      ]
     },
     "styles/default": {
       "href": "./styles/default.json",
       "type": "application/vnd.mapbox.style+json",
+      "title": "Default",
+      "file:size": 460,
+      "file:checksum": "1220e3e5ed5462d406cffe530535f8e942e4561d60f3fa9849739a4febfbd0161f5d",
       "roles": [
         "style",
         "default"
-      ],
-      "title": "Default",
-      "file:size": 460,
-      "file:checksum": "1220e3e5ed5462d406cffe530535f8e942e4561d60f3fa9849739a4febfbd0161f5d"
+      ]
     },
     "thumbnail": {
       "href": "./adm0_points.thumb.jpg",
       "type": "image/jpeg",
+      "file:size": 8236,
+      "file:checksum": "1220739195c7ca35e43654614bdd15ec59767fa11ba9394521b6a79ad677910bc285",
       "roles": [
         "thumbnail"
-      ],
-      "file:size": 8236,
-      "file:checksum": "1220739195c7ca35e43654614bdd15ec59767fa11ba9394521b6a79ad677910bc285"
+      ]
+    },
+    "documentation": {
+      "href": "./README.md",
+      "type": "text/markdown",
+      "file:size": 1175,
+      "file:checksum": "1220182ff2a124f05e9b56317a678446f07fe3392e04420978e52843dc45d4b1ed99",
+      "roles": [
+        "documentation"
+      ]
     }
   }
 }

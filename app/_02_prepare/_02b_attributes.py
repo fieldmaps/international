@@ -26,6 +26,7 @@ def _gaul(conn: DuckDBPyConnection, land: str) -> None:
     # Empty world-view mappings let _04b/_04c dissolve each unit onto itself.
     points["a_gaul"] = pd.Series(dtype="string")
     points["p_gaul"] = pd.Series(dtype="string")
+    points["label_gaul"] = pd.Series(dtype="Int64")
     lines_path = gaul_input_dir / "adm0_lines.parquet"
     lines = pd.read_parquet(lines_path).drop(columns="geom")
     for df in (points, lines):

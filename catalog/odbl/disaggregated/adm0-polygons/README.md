@@ -4,7 +4,7 @@ Admin level 0 areas, one feature per row group, so filtering on `iso_3` or `adm0
 
 ## Spatial Coverage
 
-- **Bounding Box**: [-180.0, -85.05, 180.0000001, 83.6651126]
+- **Bounding Box**: [-180.0, -85.0511287, 180.0000001, 83.6651126]
 
 ## Temporal Coverage
 
@@ -15,10 +15,11 @@ Admin level 0 areas, one feature per row group, so filtering on `iso_3` or `adm0
 
 | File | Size | Checksum |
 |------|------|----------|
-| ./adm0_polygons.parquet | 727.5 MB | 1220947149b3... |
-| ./adm0_polygons.pmtiles | 15.1 MB | 1220d7c3dc7e... |
+| ./adm0_polygons.parquet | 727.9 MB | 1220f5952de7... |
+| ./adm0_polygons.pmtiles | 15.1 MB | 1220a9121d6e... |
 | ./styles/default.json | 471 B | 1220b6aea724... |
 | ./adm0_polygons.thumb.jpg | 15.8 KB | 122038c632c7... |
+| ./README.md | 1.2 KB | 122079a0a82a... |
 
 ## Quick Start
 

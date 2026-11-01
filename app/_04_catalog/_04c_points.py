@@ -29,10 +29,12 @@ def main(conn: DuckDBPyConnection, land: str, world: str) -> None:
                '{world}' AS wld_view, b.wld_notes, a.geom
         FROM centers AS a
         JOIN "{attrs}" AS b ON a.id = b.id
+        WHERE b."label_{world}" IS DISTINCT FROM 0
     """)
 
     for wld in world_views:
         conn.execute(f'ALTER TABLE "{out}" DROP COLUMN IF EXISTS "a_{wld}"')
         conn.execute(f'ALTER TABLE "{out}" DROP COLUMN IF EXISTS "p_{wld}"')
+        conn.execute(f'ALTER TABLE "{out}" DROP COLUMN IF EXISTS "label_{wld}"')
 
     logger.info("%s_%s", land, world)

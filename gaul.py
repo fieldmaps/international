@@ -30,7 +30,6 @@ LSIB_POLYGONS = {
 ISLAND_BUFFER = 0.005
 LAND_TOLERANCE = 1e-7
 MAX_NUDGE_ROUNDS = 5
-DISPUTED = ("Sovereignty unsettled", "Joint sovereignty")
 ATTRS = ["gaul0_code", "gaul0_name", "iso3_code", "map_code", "continent"]
 
 
@@ -206,17 +205,16 @@ def _kept(conn: DuckDBPyConnection, table: str, fid: int) -> bool:
 
 def match_lsib(conn: DuckDBPyConnection) -> None:
     """Carve each undisputed LSIB island in another unit's cell into its own unit."""
-    disputed = ", ".join(f"'{s}'" for s in DISPUTED)
     for land in LANDS:
         parts = f"lsib_parts_{land}"
         conn.execute(f"""--sql
             CREATE OR REPLACE TABLE "{parts}" AS
             SELECT row_number() OVER () AS fid, upper(iso_3) AS code,
-                   upper(iso_3_grp) AS grp, status_nm IN ({disputed}) AS disputed,
+                   upper(iso_3_grp) AS grp, status_cd = 99 AS disputed,
                    geom, ST_PointOnSurface(geom) AS pt, ST_XMin(geom) AS xmin,
                    ST_YMin(geom) AS ymin, ST_XMax(geom) AS xmax, ST_YMax(geom) AS ymax
             FROM (
-                SELECT iso_3, iso_3_grp, status_nm,
+                SELECT iso_3, iso_3_grp, status_cd,
                        UNNEST(ST_Dump(geometry)).geom AS geom
                 FROM read_parquet('{LSIB_POLYGONS[land]}')
             )

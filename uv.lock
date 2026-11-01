@@ -11,7 +11,7 @@ resolution-markers = [
 ]
 
 [[package]]
-name = "adm0-generator"
+name = "international"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

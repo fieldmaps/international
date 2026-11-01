@@ -15,10 +15,11 @@ One label point per admin level 0 area. Disaggregated view: disputed and autonom
 
 | File | Size | Checksum |
 |------|------|----------|
-| ./adm0_points.parquet | 26.4 KB | 1220f532e3e8... |
-| ./adm0_points.pmtiles | 277.1 KB | 12200ca4c9c2... |
+| ./adm0_points.parquet | 26.7 KB | 1220b5432cdb... |
+| ./adm0_points.pmtiles | 287.4 KB | 122033fc8ee6... |
 | ./styles/default.json | 460 B | 1220e3e5ed54... |
 | ./adm0_points.thumb.jpg | 8.0 KB | 1220038f8cbe... |
+| ./README.md | 1.1 KB | 1220f857fc61... |
 
 ## Quick Start
 

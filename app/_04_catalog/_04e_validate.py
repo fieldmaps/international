@@ -76,10 +76,13 @@ def main(conn: DuckDBPyConnection, land: str, world: str) -> None:
     if has_invalid_coverage(conn, polygons):
         issues.append(f"{polygons}: overlaps or gaps between country polygons")
 
+    attrs = f"{land}_attributes_points"
     points_n, polygons_p_n = conn.execute(f"""--sql
         SELECT
             (SELECT COUNT(*) FROM "{points}"),
-            (SELECT COUNT(*) FROM "{polygons_p}")
+            (SELECT COUNT(*) FROM "{polygons_p}" AS p
+             LEFT JOIN "{attrs}" AS b ON p.id = b.id
+             WHERE b."label_{world}" IS DISTINCT FROM 0)
     """).fetchall()[0]
     if points_n != polygons_p_n:
         issues.append(

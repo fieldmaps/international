@@ -42,5 +42,6 @@ def main(conn: DuckDBPyConnection, land: str, world: str) -> None:
             for wld in world_views:
                 conn.execute(f'ALTER TABLE "{out}" DROP COLUMN IF EXISTS "a_{wld}"')
                 conn.execute(f'ALTER TABLE "{out}" DROP COLUMN IF EXISTS "p_{wld}"')
+                conn.execute(f'ALTER TABLE "{out}" DROP COLUMN IF EXISTS "label_{wld}"')
 
             logger.info("%s_%s_%s_%s", land, world, output, geom)

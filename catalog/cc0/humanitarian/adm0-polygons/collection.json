@@ -13,7 +13,8 @@
     {
       "rel": "parent",
       "href": "../catalog.json",
-      "type": "application/json"
+      "type": "application/json",
+      "title": "Humanitarian view"
     },
     {
       "rel": "agents",
@@ -47,7 +48,7 @@
   "pmtiles:tile_type": "mvt",
   "pmtiles:center": [
     0.0,
-    -0.6918748,
+    -0.6924391,
     3
   ],
   "pmtiles:layers": [
@@ -59,7 +60,7 @@
       "bbox": [
         [
           -180.0,
-          -85.05,
+          -85.0511287,
           180.0,
           83.6662504
         ]
@@ -97,8 +98,8 @@
     "adm0_polygons": {
       "href": "./adm0_polygons.parquet",
       "type": "application/vnd.apache.parquet",
-      "file:size": 692711721,
-      "file:checksum": "122086da0cceffd1a6f1d041f892710fa24c009209c0b5e7e95e110d3abf5b6afc48",
+      "file:size": 692703790,
+      "file:checksum": "1220e7bd7af9aa1f0503f5047a977641475fcb9869856b04352b69562501573f86f3",
       "roles": [
         "data"
       ]
@@ -107,31 +108,40 @@
       "href": "./adm0_polygons.pmtiles",
       "type": "application/vnd.pmtiles",
       "title": "adm0_polygons (vector tiles)",
+      "file:size": 17951560,
+      "file:checksum": "1220deb960307df3d036d93bba2a19671a4fce907e6ede993b8adced54497fceff5b",
       "roles": [
         "visual"
-      ],
-      "file:size": 17951850,
-      "file:checksum": "12200d078c431f02e5779d2381220f8fb99d6144c718fa5b553fe3c88812227640ec"
+      ]
     },
     "styles/default": {
       "href": "./styles/default.json",
       "type": "application/vnd.mapbox.style+json",
+      "title": "Default",
+      "file:size": 471,
+      "file:checksum": "1220b6aea72470a8d143fb223699c4b4a3f4bb4c3b7f53d95686d1a853e1c654711f",
       "roles": [
         "style",
         "default"
-      ],
-      "title": "Default",
-      "file:size": 471,
-      "file:checksum": "1220b6aea72470a8d143fb223699c4b4a3f4bb4c3b7f53d95686d1a853e1c654711f"
+      ]
     },
     "thumbnail": {
       "href": "./adm0_polygons.thumb.jpg",
       "type": "image/jpeg",
+      "file:size": 15957,
+      "file:checksum": "1220898f2f9a8f43c8a299f1868239cd43a76a24ad4bff40179bc446c2d8453d57e0",
       "roles": [
         "thumbnail"
-      ],
-      "file:size": 15957,
-      "file:checksum": "1220898f2f9a8f43c8a299f1868239cd43a76a24ad4bff40179bc446c2d8453d57e0"
+      ]
+    },
+    "documentation": {
+      "href": "./README.md",
+      "type": "text/markdown",
+      "file:size": 1259,
+      "file:checksum": "1220e68a949c16a6b5e1c4ca8f75f391cf7f13091b30e30a8fcf331c647a7a5616c3",
+      "roles": [
+        "documentation"
+      ]
     }
   }
 }

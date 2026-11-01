@@ -1,4 +1,4 @@
-# adm0-generator
+# international
 
 Batch ETL pipeline that generates Administrative Level 0 (country-level) boundary datasets by combining OpenStreetMap land polygons and the U.S. State Department's World Polygons (GSV-derived; pipeline id `usgs`) with the State Department's LSIB political boundary lines. Its canonical output is a local Portolan catalog of GeoParquet + PMTiles in `catalog/`; GeoPackage, OpenFileGDB, GeoParquet, and XLSX downloads in `outputs/` are derived from it, for each combination of land source × world view.
 
@@ -35,9 +35,9 @@ Source publication dates are read from the `.date` files written during download
 **`_04_catalog.main(land)`** (`app/_04_catalog/`):
 
 1. For each `world` in `["intl", "all"]`:
-   - `_04a_lines.main`, `_04b_polygons.main`, `_04c_points.main`: final output tables
+   - `_04a_lines.main`, `_04b_polygons.main`, `_04c_points.main`: final output tables; points skip ids with `label_{world} = 0` (the polygon keeps its name, no map label)
    - `_04d_parquet.main`: writes Hilbert-sorted GeoParquet 2.0 (no bbox column) via geoparquet-io to `catalog/{cc0,odbl}/{humanitarian,disaggregated}/adm0-{polygons,lines,points}/` (land `usgs` → `cc0`, `osm` → `odbl`; world `intl` → `humanitarian`, `all` → `disaggregated`); polygons get one row per row group; voronoi (intl only) goes to `outputs/`
-   - `_04e_validate.main`: checks final lines/polygons/points tables (geometry validity, lon/lat bounds, ID uniqueness, attribute-join completeness, polygon topology, points-to-polygons row parity) before world-scoped tables are dropped
+   - `_04e_validate.main`: checks final lines/polygons/points tables (geometry validity, lon/lat bounds, ID uniqueness, attribute-join completeness, polygon topology, points-to-polygons row parity excluding `label_{world} = 0` parts) before world-scoped tables are dropped
    - `_04f_cleanup.main`: drops per-world tables to free memory before the next world iteration
 2. `_04g_portolan.main`: builds a PMTiles file beside each catalog parquet with tylertoo, then `portolan add <collection> --pmtiles`, which registers the existing PMTiles, default style, and thumbnail
 
@@ -167,6 +167,7 @@ Flags:
 - `--debug` / `DEBUG=1` — wraps DuckDB connection (logs wall-clock, peak RSS, duckdb-memory delta per query, coalescing consecutive same-label executes into `query xN ...` summaries); `discard()` becomes a no-op (intermediate tables persist); after each `step.main(land)`, tables are dumped under `tmp/debug/`. Layout mirrors the land-outer loop, with only the land and step as folders: per-land tables go to `tmp/debug/{land}/{step}/{table}.parquet` (with the `{land}_` prefix stripped from the filename); shared tables go to `tmp/debug/{step}/{table}.parquet`. Examples: `osm_attributes_lines` → `tmp/debug/osm/_02_prepare/attributes_lines.parquet`; `osm_polygons_01_a_intl` → `tmp/debug/osm/_04_catalog/polygons_01_a_intl.parquet`; `lsib_00` → `tmp/debug/_02_prepare/lsib_00.parquet`; `dates` → `tmp/debug/_02_prepare/dates.parquet`. Implied by `--step` and `--land` (any partial run is treated as iteration).
 - `--step {_01_download,_02_prepare,_03_build,_04_catalog,_05_export}` / `STEP=...` — run only the named step; default runs all five. Implies `--debug`.
 - `--land {osm,usgs}` / `LAND=...` — process only one land source (default: both). Use for fast iteration; verify with both before merging. Implies `--debug`.
+- `--bounds {lsib,gaul}` / `BOUNDS=...`: boundary source (default: `lsib`). `gaul` builds the experimental GAUL variant into `catalog/{cc-by,odbl}/gaul/`, which is local-only and never published. Implies `--debug`.
 
 ### Sub-step iteration with `iter.py`
 
@@ -202,7 +203,7 @@ env -i HOME=$HOME PATH=$PATH bash -c 'set -a; source ../.env; set +a; exec ../.v
 Large files (about 100 MB and up) fail in `portolan push`: connections to `data.source.coop` drop mid-upload (TLS read failure), obstore does not retry them, and the follow-up abort fails with `SignatureDoesNotMatch` / `NoSuchBucket`, which hides the real error. For a collection that fails this way, upload its assets and `versions.json` with the AWS CLI using `aws.config` (retries, classic transfer client), then rerun the push above, which skips them and syncs metadata:
 
 ```bash
-c=odbl/gaul/adm0-polygons g=polygons
+c=odbl/humanitarian/adm0-polygons g=polygons
 env -i HOME=$HOME PATH=$PATH AWS_CONFIG_FILE=$PWD/aws.config bash -c "set -a; source .env; set +a; for f in adm0_$g.parquet adm0_$g.pmtiles adm0_$g.thumb.jpg versions.json; do aws s3 cp catalog/$c/\$f s3://fieldmaps/international/$c/\$f --only-show-errors; done"
 ```
 

@@ -13,7 +13,8 @@
     {
       "rel": "parent",
       "href": "../catalog.json",
-      "type": "application/json"
+      "type": "application/json",
+      "title": "Humanitarian view"
     },
     {
       "rel": "agents",
@@ -105,8 +106,8 @@
     "adm0_lines": {
       "href": "./adm0_lines.pmtiles",
       "type": "application/vnd.pmtiles",
-      "file:size": 1788100,
-      "file:checksum": "122022129a1d377c6bc7a14f764f2f21728caa5c3c245cd419adff387933468f340c",
+      "file:size": 1811316,
+      "file:checksum": "1220486bbdbd32a39417825996ee97f031380539bb0d344b65e00be6f6ef9ff3819a",
       "roles": [
         "data"
       ]
@@ -114,8 +115,8 @@
     "adm0_lines.parquet": {
       "href": "./adm0_lines.parquet",
       "type": "application/vnd.apache.parquet",
-      "file:size": 37329696,
-      "file:checksum": "12208008230e7841886285c0f0688ed38ad7f4566df964115d8f667a9f8c3f489c6f",
+      "file:size": 37303034,
+      "file:checksum": "12208b094d2fa7956b1e79c1717df2026886ba45636ccf8011760614c4b895e0acc9",
       "roles": [
         "data"
       ]
@@ -124,31 +125,40 @@
       "href": "./adm0_lines.pmtiles",
       "type": "application/vnd.pmtiles",
       "title": "adm0_lines.parquet (vector tiles)",
+      "file:size": 1811316,
+      "file:checksum": "1220486bbdbd32a39417825996ee97f031380539bb0d344b65e00be6f6ef9ff3819a",
       "roles": [
         "visual"
-      ],
-      "file:size": 1788100,
-      "file:checksum": "122022129a1d377c6bc7a14f764f2f21728caa5c3c245cd419adff387933468f340c"
+      ]
     },
     "styles/default": {
       "href": "./styles/default.json",
       "type": "application/vnd.mapbox.style+json",
+      "title": "Default",
+      "file:size": 446,
+      "file:checksum": "1220042e288c445509dfb3ec2d2f31d0603ea5cca779acef54b257117c13ed784626",
       "roles": [
         "style",
         "default"
-      ],
-      "title": "Default",
-      "file:size": 446,
-      "file:checksum": "1220042e288c445509dfb3ec2d2f31d0603ea5cca779acef54b257117c13ed784626"
+      ]
     },
     "thumbnail": {
       "href": "./adm0_lines.thumb.jpg",
       "type": "image/jpeg",
+      "file:size": 9644,
+      "file:checksum": "122077f11682cbdc8df8d7d44f5039cb4faea288bbf5b3894a4159b9e7acfe91e890",
       "roles": [
         "thumbnail"
-      ],
-      "file:size": 9644,
-      "file:checksum": "122077f11682cbdc8df8d7d44f5039cb4faea288bbf5b3894a4159b9e7acfe91e890"
+      ]
+    },
+    "documentation": {
+      "href": "./README.md",
+      "type": "text/markdown",
+      "file:size": 1289,
+      "file:checksum": "1220717df071da6284fce4d29b4c34ac00c752f70570abeb60ed9a9a32bff778e970",
+      "roles": [
+        "documentation"
+      ]
     }
   }
 }

@@ -41,7 +41,7 @@ parser.add_argument(
     "--bounds",
     default=getenv("BOUNDS"),
     choices=["lsib", "gaul"],
-    help="Process only one boundary source (default: both).",
+    help="Boundary source (default: lsib; gaul is a local-only experiment).",
 )
 args = parser.parse_args()
 
@@ -73,8 +73,7 @@ os.environ["OGR_ORGANIZE_POLYGONS"] = "ONLY_CCW"
 # --- Pipeline dimensions ---
 # A land key is the land source, suffixed "_gaul" for the GAUL boundary variant.
 ALL_LANDS = ("osm", "usgs")
-ALL_BOUNDS = ("lsib", "gaul")
-_bounds = [args.bounds] if args.bounds else list(ALL_BOUNDS)
+_bounds = [args.bounds] if args.bounds else ["lsib"]
 _lands = [args.land] if args.land else list(ALL_LANDS)
 lands = [ln if b == "lsib" else f"{ln}_gaul" for b in _bounds for ln in _lands]
 world_views = ["intl", "all", "gaul"]
