@@ -41,9 +41,8 @@ def main(conn: DuckDBPyConnection, land: str) -> None:
             wld_date = conn.execute(
                 f"SELECT max(wld_date) FROM read_parquet('{parquet}')"
             ).fetchall()[0][0]
-            fieldmaps_publish.run(
+            fieldmaps_publish.add(
                 catalog_dir,
-                "add",
                 str(parquet.parent.relative_to(catalog_dir)),
                 "--pmtiles",
                 "--datetime",
