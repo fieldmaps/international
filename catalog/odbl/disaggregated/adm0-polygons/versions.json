@@ -1,6 +1,6 @@
 {
   "spec_version": "1.0.0",
-  "current_version": "1.4.0",
+  "current_version": "1.4.1",
   "versions": [
     {
       "version": "1.0.0",
@@ -298,6 +298,44 @@
         }
       },
       "message": ""
+    },
+    {
+      "version": "1.4.1",
+      "created": "2026-11-01T07:41:43.703149Z",
+      "breaking": false,
+      "assets": {
+        "adm0_polygons.pmtiles": {
+          "sha256": "df63fd77073fbb0ab451df1deb4c21106d427454167cf0906a5b2d66c03181eb",
+          "size_bytes": 431116568,
+          "href": "odbl/disaggregated/adm0-polygons/adm0_polygons.pmtiles",
+          "mtime": 1793518900.2408884
+        },
+        "adm0_polygons.parquet": {
+          "sha256": "f5952de7beac8328a36debf9c6da498cfd99f91c208fbc367e3138339e642bca",
+          "size_bytes": 763221361,
+          "href": "odbl/disaggregated/adm0-polygons/adm0_polygons.parquet",
+          "source_mtime": 1793488773.2165298,
+          "mtime": 1793488773.2165298,
+          "feature_count": 328,
+          "schema_fingerprint": "e7727fd8589f28c1"
+        },
+        "adm0_polygons.thumb.jpg": {
+          "sha256": "38c632c7a3a1459e9a99c6f6b1f4bb03a04d2d82aaa90963f2cd2583fc653a6b",
+          "size_bytes": 16222,
+          "href": "odbl/disaggregated/adm0-polygons/adm0_polygons.thumb.jpg",
+          "mtime": 1791334910.492158
+        },
+        "README.md": {
+          "sha256": "32be264d454cd56374bc36e1866035835475e025bed4c69aa172c68e70b930bc",
+          "size_bytes": 1277,
+          "href": "odbl/disaggregated/adm0-polygons/README.md",
+          "mtime": 1793494158.8737998
+        }
+      },
+      "changes": [
+        "adm0_polygons.pmtiles",
+        "README.md"
+      ]
     }
   ]
 }

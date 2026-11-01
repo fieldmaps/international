@@ -10,6 +10,8 @@ from app.utils import get_source_date
 
 logger = getLogger(__name__)
 
+LINE_KEYS = ["country1", "country2", "rank", "label"]
+
 
 def _register(conn: DuckDBPyConnection, table: str, df: pd.DataFrame) -> None:
     conn.register("df_temp", df)
@@ -50,6 +52,11 @@ def main(conn: DuckDBPyConnection, land: str) -> None:
     for geom in ["points", "lines"]:
         file = input_dir / f"adm0_{geom}.csv"
         df = pd.read_csv(file, keep_default_na=False, na_values=["", "#N/A"])
+        if geom == "lines":
+            dup = df[df.duplicated(LINE_KEYS, keep=False)]
+            if not dup.empty:
+                msg = f"{file.name}: duplicate join keys, adm_id {list(dup['adm_id'])}"
+                raise ValueError(msg)
         if geom == "points":
             df["adm0_src"] = df["id"]
             df["adm0_id"] = df["adm0_src"] + "-" + land_date.replace("-", "")

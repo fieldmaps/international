@@ -1,6 +1,6 @@
 {
   "spec_version": "1.0.0",
-  "current_version": "1.4.0",
+  "current_version": "1.4.1",
   "versions": [
     {
       "version": "1.0.0",
@@ -298,6 +298,44 @@
         }
       },
       "message": ""
+    },
+    {
+      "version": "1.4.1",
+      "created": "2026-11-01T07:11:56.396486Z",
+      "breaking": false,
+      "assets": {
+        "adm0_points.pmtiles": {
+          "sha256": "0fe04191d13c9987c337e0f0ece64c84840167f809b9b8b6770a6f9ae4a5cc0c",
+          "size_bytes": 859352,
+          "href": "odbl/humanitarian/adm0-points/adm0_points.pmtiles",
+          "mtime": 1793517115.4156249
+        },
+        "adm0_points.parquet": {
+          "sha256": "16ad33c345cf8e88446087df29fce7c548fc1cc099c4d8882554654ee8f21fef",
+          "size_bytes": 24360,
+          "href": "odbl/humanitarian/adm0-points/adm0_points.parquet",
+          "source_mtime": 1793487061.441171,
+          "mtime": 1793487061.441171,
+          "feature_count": 272,
+          "schema_fingerprint": "041f60a1cf19665e"
+        },
+        "adm0_points.thumb.jpg": {
+          "sha256": "dee02f9e2cce9a45789258b90528a8394adc559ff4c2d64c75bd9724de4d5da9",
+          "size_bytes": 8119,
+          "href": "odbl/humanitarian/adm0-points/adm0_points.thumb.jpg",
+          "mtime": 1791334707.4056733
+        },
+        "README.md": {
+          "sha256": "b668462e2a89d0cf54c45073bc7af305440238919541048a37805f9724d88857",
+          "size_bytes": 1207,
+          "href": "odbl/humanitarian/adm0-points/README.md",
+          "mtime": 1793494158.8752525
+        }
+      },
+      "changes": [
+        "adm0_points.pmtiles",
+        "README.md"
+      ]
     }
   ]
 }

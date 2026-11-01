@@ -44,12 +44,12 @@
   ],
   "updated": "2026-10-07T01:41:23Z",
   "pmtiles:min_zoom": 0,
-  "pmtiles:max_zoom": 6,
+  "pmtiles:max_zoom": 12,
   "pmtiles:tile_type": "mvt",
   "pmtiles:center": [
     0.2915939,
     1.3833039,
-    3
+    6
   ],
   "pmtiles:layers": [
     "adm0_points"
@@ -108,8 +108,8 @@
       "href": "./adm0_points.pmtiles",
       "type": "application/vnd.pmtiles",
       "title": "adm0_points (vector tiles)",
-      "file:size": 288550,
-      "file:checksum": "12208ea00ec253050d6b979de6ebe55eade9df25281cbdd66fd65f089cfaab0c01e6",
+      "file:size": 1014133,
+      "file:checksum": "1220ba3bafaece68c24158a3e63f3b7bb1b15e37c3898c840d3b3a60135a7c9cb85b",
       "roles": [
         "visual"
       ]

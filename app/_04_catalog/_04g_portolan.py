@@ -35,11 +35,23 @@ def main(conn: DuckDBPyConnection, land: str) -> None:
         for geom in geoms:
             parquet = catalog_parquet(land, wld, geom)
             overview = tmp_dir / f"{land}/{wld}/adm0_{geom}_overview.parquet"
-            tylertoo.overview(str(parquet), str(overview))
+            overview.parent.mkdir(parents=True, exist_ok=True)
+            # Every boundary at every zoom: only sub-pixel simplification drops detail.
+            tylertoo.overview(
+                str(parquet),
+                str(overview),
+                max_zoom=12,
+                density_drop=False,
+                line_thinning=0,
+                line_visibility=0,
+                polygon_thinning=0,
+                polygon_visibility=0,
+            )
             tylertoo.export_pmtiles(
                 str(overview),
                 str(parquet.with_suffix(".pmtiles")),
                 layer_name=parquet.stem,
+                tile_size_limit=None,
             )
             overview.unlink()
             wld_date = conn.execute(
