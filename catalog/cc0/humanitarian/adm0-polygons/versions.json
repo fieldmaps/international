@@ -1,6 +1,6 @@
 {
   "spec_version": "1.0.0",
-  "current_version": "1.3.0",
+  "current_version": "1.3.1",
   "versions": [
     {
       "version": "1.0.0",
@@ -220,6 +220,44 @@
         }
       },
       "message": ""
+    },
+    {
+      "version": "1.3.1",
+      "created": "2026-11-01T07:54:09.777575Z",
+      "breaking": false,
+      "assets": {
+        "adm0_polygons.pmtiles": {
+          "sha256": "e1a5e56ceeff45d48b3150ca677319bde001cc4ad92b582910a2efb838bf30e0",
+          "size_bytes": 446015233,
+          "href": "cc0/humanitarian/adm0-polygons/adm0_polygons.pmtiles",
+          "mtime": 1793519642.6896117
+        },
+        "adm0_polygons.parquet": {
+          "sha256": "e7bd7af9aa1f0503f5047a977641475fcb9869856b04352b69562501573f86f3",
+          "size_bytes": 692703790,
+          "href": "cc0/humanitarian/adm0-polygons/adm0_polygons.parquet",
+          "source_mtime": 1793491590.2472603,
+          "mtime": 1793491590.2472603,
+          "feature_count": 315,
+          "schema_fingerprint": "e7727fd8589f28c1"
+        },
+        "adm0_polygons.thumb.jpg": {
+          "sha256": "898f2f9a8f43c8a299f1868239cd43a76a24ad4bff40179bc446c2d8453d57e0",
+          "size_bytes": 15957,
+          "href": "cc0/humanitarian/adm0-polygons/adm0_polygons.thumb.jpg",
+          "mtime": 1791336999.028796
+        },
+        "README.md": {
+          "sha256": "e68a949c16a6b5e1c4ca8f75f391cf7f13091b30e30a8fcf331c647a7a5616c3",
+          "size_bytes": 1259,
+          "href": "cc0/humanitarian/adm0-polygons/README.md",
+          "mtime": 1793494158.8713465
+        }
+      },
+      "changes": [
+        "adm0_polygons.pmtiles",
+        "README.md"
+      ]
     }
   ]
 }

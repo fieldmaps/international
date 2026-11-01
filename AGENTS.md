@@ -20,7 +20,7 @@ Batch ETL pipeline that generates Administrative Level 0 (country-level) boundar
 
 **`_02_prepare.main(land)`** (`app/_02_prepare/`):
 
-1. `_02a_preprocessing.main(conn, land)` — loads LSIB then `ST_Read`s the requested land source
+1. `_02a_preprocessing.main(conn, land)`: loads LSIB, splits its South Sudan lines into the Kafia Kingi pieces (at the Sudan claim line in `inputs/adm0_lines.parquet`) and the Ilemi Triangle 1/2/3 pieces (faces of the Administrative and Provisional lines, west to east), then `ST_Read`s the requested land source
 2. `_02b_attributes.main(conn, land)` — loads CSV attribute tables for the requested land
 
 Source publication dates are read from the `.date` files written during download via `app.utils.get_source_date(source)` (no DuckDB table). `wld_date` is the LSIB date; `wld_update` is the land source's date.
@@ -35,7 +35,7 @@ Source publication dates are read from the `.date` files written during download
 **`_04_catalog.main(land)`** (`app/_04_catalog/`):
 
 1. For each `world` in `["intl", "all"]`:
-   - `_04a_lines.main`, `_04b_polygons.main`, `_04c_points.main`: final output tables; points skip ids with `label_{world} = 0` (the polygon keeps its name, no map label)
+   - `_04a_lines.main`, `_04b_polygons.main`, `_04c_points.main`: final output tables; points skip ids with `label_{world} = 0` (the polygon keeps its name, no map label); lines with `adm_id_{world}` set in `adm0_lines.csv` take that row's attributes and merge into it
    - `_04d_parquet.main`: writes Hilbert-sorted GeoParquet 2.0 (no bbox column) via geoparquet-io to `catalog/{cc0,odbl}/{humanitarian,disaggregated}/adm0-{polygons,lines,points}/` (land `usgs` → `cc0`, `osm` → `odbl`; world `intl` → `humanitarian`, `all` → `disaggregated`); polygons get one row per row group; voronoi (intl only) goes to `outputs/`
    - `_04e_validate.main`: checks final lines/polygons/points tables (geometry validity, lon/lat bounds, ID uniqueness, attribute-join completeness, polygon topology, points-to-polygons row parity excluding `label_{world} = 0` parts) before world-scoped tables are dropped
    - `_04f_cleanup.main`: drops per-world tables to free memory before the next world iteration

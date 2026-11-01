@@ -4,77 +4,77 @@
   "created": "2026-10-06T22:13:51.017177+00:00",
   "collections": {
     "odbl/humanitarian/adm0-polygons": {
-      "current_version": "1.4.0",
-      "updated": "2026-10-31T23:37:42.489491+00:00",
+      "current_version": "1.4.1",
+      "updated": "2026-11-01T07:11:44.576685+00:00",
       "asset_count": 4,
-      "total_size_bytes": 778082378
+      "total_size_bytes": 1194017383
     },
     "odbl/humanitarian/adm0-lines": {
-      "current_version": "1.4.0",
-      "updated": "2026-10-31T23:37:50.270999+00:00",
+      "current_version": "1.6.0",
+      "updated": "2026-11-01T09:40:02.783271+00:00",
       "asset_count": 4,
-      "total_size_bytes": 39125240
+      "total_size_bytes": 70442055
     },
     "odbl/humanitarian/adm0-points": {
-      "current_version": "1.4.0",
-      "updated": "2026-10-31T23:37:51.424226+00:00",
+      "current_version": "1.4.1",
+      "updated": "2026-11-01T07:11:56.397656+00:00",
       "asset_count": 4,
-      "total_size_bytes": 299521
+      "total_size_bytes": 893038
     },
     "odbl/disaggregated/adm0-polygons": {
-      "current_version": "1.4.0",
-      "updated": "2026-10-31T23:42:30.731254+00:00",
+      "current_version": "1.4.1",
+      "updated": "2026-11-01T07:41:43.705067+00:00",
       "asset_count": 4,
-      "total_size_bytes": 779093585
+      "total_size_bytes": 1194355428
     },
     "odbl/disaggregated/adm0-lines": {
-      "current_version": "1.4.0",
-      "updated": "2026-10-31T23:42:35.546731+00:00",
+      "current_version": "1.6.0",
+      "updated": "2026-11-01T09:40:13.294478+00:00",
       "asset_count": 4,
-      "total_size_bytes": 39201700
+      "total_size_bytes": 70539755
     },
     "odbl/disaggregated/adm0-points": {
-      "current_version": "1.4.0",
-      "updated": "2026-10-31T23:42:36.732898+00:00",
+      "current_version": "1.4.1",
+      "updated": "2026-11-01T07:41:55.605379+00:00",
       "asset_count": 4,
-      "total_size_bytes": 330885
+      "total_size_bytes": 1063951
     },
     "cc0/humanitarian/adm0-polygons": {
-      "current_version": "1.3.0",
-      "updated": "2026-11-01T00:23:12.959567+00:00",
+      "current_version": "1.3.1",
+      "updated": "2026-11-01T07:54:09.797376+00:00",
       "asset_count": 4,
-      "total_size_bytes": 710672518
+      "total_size_bytes": 1138736239
     },
     "cc0/humanitarian/adm0-lines": {
-      "current_version": "1.3.0",
-      "updated": "2026-11-01T00:23:19.466839+00:00",
+      "current_version": "1.5.0",
+      "updated": "2026-11-01T09:54:10.056349+00:00",
       "asset_count": 4,
-      "total_size_bytes": 49871980
+      "total_size_bytes": 88306920
     },
     "cc0/humanitarian/adm0-points": {
-      "current_version": "1.3.0",
-      "updated": "2026-11-01T00:23:20.648973+00:00",
+      "current_version": "1.3.1",
+      "updated": "2026-11-01T07:54:33.570396+00:00",
       "asset_count": 4,
-      "total_size_bytes": 293090
+      "total_size_bytes": 874701
     },
     "cc0/disaggregated/adm0-polygons": {
-      "current_version": "1.3.0",
-      "updated": "2026-11-01T00:25:39.763077+00:00",
+      "current_version": "1.3.1",
+      "updated": "2026-11-01T08:06:43.133647+00:00",
       "asset_count": 4,
-      "total_size_bytes": 711667591
+      "total_size_bytes": 1140302179
     },
     "cc0/disaggregated/adm0-lines": {
-      "current_version": "1.3.0",
-      "updated": "2026-11-01T00:25:44.962080+00:00",
+      "current_version": "1.5.0",
+      "updated": "2026-11-01T09:54:26.841210+00:00",
       "asset_count": 4,
-      "total_size_bytes": 50002354
+      "total_size_bytes": 88643821
     },
     "cc0/disaggregated/adm0-points": {
-      "current_version": "1.3.0",
-      "updated": "2026-11-01T00:25:46.062893+00:00",
+      "current_version": "1.3.1",
+      "updated": "2026-11-01T08:07:07.498063+00:00",
       "asset_count": 4,
-      "total_size_bytes": 325276
+      "total_size_bytes": 1050902
     }
   },
-  "updated": "2026-11-01T00:25:46.062893+00:00"
+  "updated": "2026-11-01T09:54:26.841210+00:00"
 }

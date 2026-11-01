@@ -44,12 +44,12 @@
   ],
   "updated": "2026-10-07T01:40:38Z",
   "pmtiles:min_zoom": 0,
-  "pmtiles:max_zoom": 6,
+  "pmtiles:max_zoom": 12,
   "pmtiles:tile_type": "mvt",
   "pmtiles:center": [
     0.0101463,
     7.5990442,
-    3
+    6
   ],
   "pmtiles:layers": [
     "adm0_lines"
@@ -98,8 +98,8 @@
     "adm0_lines": {
       "href": "./adm0_lines.pmtiles",
       "type": "application/vnd.pmtiles",
-      "file:size": 1822841,
-      "file:checksum": "122004e181e5bee7163d4c67bc2a41224cee9ecd70130368059289adc78d3ea5f9fe",
+      "file:size": 40454937,
+      "file:checksum": "1220b17552c5107499c77cfcdab09da96024e218927c54360af107dbea888db5488c",
       "roles": [
         "data"
       ]
@@ -107,8 +107,8 @@
     "adm0_lines.parquet": {
       "href": "./adm0_lines.parquet",
       "type": "application/vnd.apache.parquet",
-      "file:size": 48168450,
-      "file:checksum": "12206340d5d425539498e259884e4a10ca71127025fd7721134d125035b6e361fab8",
+      "file:size": 48177778,
+      "file:checksum": "12208bb6519b90b3b4c7fc9f5398f175b73f70bfd840269a58f44736148a2b305e93",
       "roles": [
         "data"
       ]
@@ -117,8 +117,8 @@
       "href": "./adm0_lines.pmtiles",
       "type": "application/vnd.pmtiles",
       "title": "adm0_lines.parquet (vector tiles)",
-      "file:size": 1822841,
-      "file:checksum": "122004e181e5bee7163d4c67bc2a41224cee9ecd70130368059289adc78d3ea5f9fe",
+      "file:size": 40454937,
+      "file:checksum": "1220b17552c5107499c77cfcdab09da96024e218927c54360af107dbea888db5488c",
       "roles": [
         "visual"
       ]

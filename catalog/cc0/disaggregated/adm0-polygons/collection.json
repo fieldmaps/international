@@ -44,12 +44,12 @@
   ],
   "updated": "2026-10-07T01:39:54Z",
   "pmtiles:min_zoom": 0,
-  "pmtiles:max_zoom": 6,
+  "pmtiles:max_zoom": 12,
   "pmtiles:tile_type": "mvt",
   "pmtiles:center": [
     0.0,
     -0.6924391,
-    3
+    6
   ],
   "pmtiles:layers": [
     "adm0_polygons"
@@ -108,8 +108,8 @@
       "href": "./adm0_polygons.pmtiles",
       "type": "application/vnd.pmtiles",
       "title": "adm0_polygons (vector tiles)",
-      "file:size": 17967694,
-      "file:checksum": "1220126c2953eaaf14419269e8a4d18cad171fc11ae3f5634dc2e7196bbef6a20623",
+      "file:size": 446602234,
+      "file:checksum": "1220a9e21e99d3aef3c1a38eb455602a757b72db98ce88fa6ffe43a622f1d4ae0794",
       "roles": [
         "visual"
       ]

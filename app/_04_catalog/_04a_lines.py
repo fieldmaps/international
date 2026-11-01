@@ -92,6 +92,38 @@ def _gaul(conn: DuckDBPyConnection, land: str, world: str) -> None:
     conn.execute(f'DROP TABLE IF EXISTS "{tmp}"')
 
 
+def _merge(conn: DuckDBPyConnection, land: str, world: str) -> None:
+    """Give lines with ``adm_id_{world}`` set that row's attributes, merged into it."""
+    attrs = f"{land}_attributes_lines"
+    out = f"{land}_lines_02_{world}"
+    pairs = conn.execute(f"""--sql
+        SELECT adm_id, "adm_id_{world}"::INTEGER FROM "{out}"
+        WHERE "adm_id_{world}" IS NOT NULL
+    """).fetchall()
+    if not pairs:
+        return
+    ids = sorted({i for pair in pairs for i in pair})
+    conn.execute(
+        f"""--sql
+        CREATE OR REPLACE TABLE "{out}" AS
+        SELECT * FROM "{out}" WHERE NOT COALESCE(list_contains($1, adm_id), false)
+        UNION ALL BY NAME
+        SELECT
+            b.*,
+            '{world}' AS wld_view,
+            ST_Multi(
+                ST_ReducePrecision(ST_Union_Agg(o.geom), {GEOM_PRECISION})
+            ) AS geom
+        FROM "{out}" AS o
+        JOIN "{attrs}" AS b
+        ON b.adm_id = COALESCE(o."adm_id_{world}"::INTEGER, o.adm_id)
+        WHERE list_contains($1, o.adm_id)
+        GROUP BY ALL
+        """,
+        [ids],
+    )
+
+
 def main(conn: DuckDBPyConnection, land: str, world: str) -> None:
     """Clip boundary lines to land and filter by world view."""
     if bounds_of(land) == "gaul":
@@ -121,6 +153,7 @@ def main(conn: DuckDBPyConnection, land: str, world: str) -> None:
     """)
 
     conn.execute(f'DROP TABLE IF EXISTS "{tmp}"')
+    _merge(conn, land, world)
 
     # line_type overrides in the CSV; otherwise derived from LSIB status.
     conn.execute(f"""--sql
@@ -134,6 +167,7 @@ def main(conn: DuckDBPyConnection, land: str, world: str) -> None:
     """)
 
     for wld in world_views:
-        conn.execute(f'ALTER TABLE "{out}" DROP COLUMN IF EXISTS "rank_{wld}"')
+        for col in [f"rank_{wld}", f"adm_id_{wld}"]:
+            conn.execute(f'ALTER TABLE "{out}" DROP COLUMN IF EXISTS "{col}"')
 
     logger.info("%s_%s", land, world)

@@ -1,6 +1,6 @@
 {
   "spec_version": "1.0.0",
-  "current_version": "1.4.0",
+  "current_version": "1.4.1",
   "versions": [
     {
       "version": "1.0.0",
@@ -298,6 +298,44 @@
         }
       },
       "message": ""
+    },
+    {
+      "version": "1.4.1",
+      "created": "2026-11-01T07:41:55.604788Z",
+      "breaking": false,
+      "assets": {
+        "adm0_points.pmtiles": {
+          "sha256": "0d5144aa701669cb28842e5c9079ec6d8726765d624a2a007a4897d443116284",
+          "size_bytes": 1027276,
+          "href": "odbl/disaggregated/adm0-points/adm0_points.pmtiles",
+          "mtime": 1793518914.61374
+        },
+        "adm0_points.parquet": {
+          "sha256": "b5432cdb676ff0f27779c6846b98b894d5e10b37605813251179f1ebd8652254",
+          "size_bytes": 27316,
+          "href": "odbl/disaggregated/adm0-points/adm0_points.parquet",
+          "source_mtime": 1793488486.9380836,
+          "mtime": 1793488486.9380836,
+          "feature_count": 328,
+          "schema_fingerprint": "041f60a1cf19665e"
+        },
+        "adm0_points.thumb.jpg": {
+          "sha256": "038f8cbeb144ea339a31f76b6294a4557d0733ae64cdbadcf5a3b87cd3b9bc1c",
+          "size_bytes": 8162,
+          "href": "odbl/disaggregated/adm0-points/adm0_points.thumb.jpg",
+          "mtime": 1791334917.082396
+        },
+        "README.md": {
+          "sha256": "a49cfe8bc08cd3ca786a391e6fa1ff9f6de50244029e83e63460459432907a66",
+          "size_bytes": 1197,
+          "href": "odbl/disaggregated/adm0-points/README.md",
+          "mtime": 1793494158.8730814
+        }
+      },
+      "changes": [
+        "adm0_points.pmtiles",
+        "README.md"
+      ]
     }
   ]
 }
