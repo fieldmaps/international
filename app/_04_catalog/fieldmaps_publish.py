@@ -52,27 +52,21 @@ def push(
     *,
     exclude: Sequence[str] = (),
 ) -> None:
-    """Sync catalog/ to the remote, versions.json last, then verify nothing differs."""
+    """Sync catalog/ to the remote, versions.json last."""
     load_dotenv(catalog.parent / ".env")
     remote = remote or os.environ["PORTOLAN_REMOTE"]
     excludes = [*HIDDEN, *exclude]
     _sync(catalog, remote, [*excludes, "*versions.json"])
     _sync(catalog, remote, excludes)
-    if stale := _sync(catalog, remote, excludes, "--dryrun"):
-        msg = f"remote still differs after sync: {stale[:10]}"
-        raise RuntimeError(msg)
-    logger.info("push verified")
 
 
-def _sync(
-    catalog: Path, remote: str, excludes: Sequence[str], *flags: str
-) -> list[str]:
-    """Run `aws s3 sync` with the repo-root aws.config and return its upload lines."""
+def _sync(catalog: Path, remote: str, excludes: Sequence[str]) -> None:
+    """Run `aws s3 sync` with the repo-root aws.config, raising if any upload fails."""
     # aws.config retries each dropped multipart part, which source.coop needs.
     env = {**os.environ, "AWS_CONFIG_FILE": str(catalog.parent / "aws.config")}
     args = [arg for pattern in excludes for arg in ("--exclude", pattern)]
     result = subprocess.run(
-        ["aws", "s3", "sync", str(catalog), remote, "--no-progress", *args, *flags],
+        ["aws", "s3", "sync", str(catalog), remote, "--no-progress", *args],
         env=env,
         capture_output=True,
         text=True,
@@ -81,7 +75,5 @@ def _sync(
     if result.returncode:
         msg = f"aws s3 sync exited {result.returncode}: {result.stderr}"
         raise RuntimeError(msg)
-    lines = result.stdout.splitlines()
-    for line in lines:
+    for line in result.stdout.splitlines():
         logger.info(line)
-    return lines
