@@ -195,7 +195,7 @@ Check the keys (expect `assumed-role/_default/...`):
 env -i HOME=$HOME PATH=$PATH bash -c 'set -a; source .env; set +a; aws sts get-caller-identity --endpoint-url https://data.source.coop/.sts'
 ```
 
-Push with `--push` / `PUSH=1`: after `portolan check`, `_04_catalog.finalize()` runs `portolan push` to `PORTOLAN_REMOTE`, re-uploads every local file the remote lacks, holds at a different size, or holds older (excluding `*/gaul/*`), and raises if the remote still differs. `versions.json` files re-upload on every push. To push an already-built catalog without rerunning `_04_catalog`:
+Push with `--push` / `PUSH=1`: after `portolan check`, `_04_catalog.finalize()` runs `aws s3 sync` of `catalog/` to `PORTOLAN_REMOTE` with `AWS_CONFIG_FILE=aws.config` (per-part retries, classic transfer client), first everything except `versions.json`, then the `versions.json` files, skipping hidden paths and `*/gaul/*`. A final `--dryrun` sync must list nothing, or the push raises. Needs the AWS CLI on PATH. To push an already-built catalog without rerunning `_04_catalog`:
 
 ```bash
 uv run python -c 'from app.config import catalog_dir; from app._04_catalog import fieldmaps_publish as p; p.push(catalog_dir, exclude=("*/gaul/*",))'

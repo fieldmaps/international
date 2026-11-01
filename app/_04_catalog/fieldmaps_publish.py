@@ -1,4 +1,4 @@
-"""Run and push portolan catalogs, verifying the remote matches local files.
+"""Run portolan on a catalog and sync it to its remote with the AWS CLI.
 
 Vendored identically in fieldmaps/subnational and fieldmaps/international.
 """
@@ -7,21 +7,14 @@ import json
 import os
 import subprocess
 from collections.abc import Sequence
-from concurrent.futures import ThreadPoolExecutor
-from datetime import UTC, datetime
-from fnmatch import fnmatch
 from logging import getLogger
 from pathlib import Path
 
-import obstore as obs
 from dotenv import load_dotenv
-from obstore.store import S3Store
-from tenacity import retry, stop_after_attempt, wait_exponential
 
 logger = getLogger(__name__)
 
-UPLOAD_WORKERS = 4
-CHUNK_SIZE = 16 * 1024 * 1024
+HIDDEN = (".*", "*/.*")
 
 
 def run(
@@ -57,59 +50,38 @@ def push(
     catalog: Path,
     remote: str | None = None,
     *,
-    command: Sequence[str] = ("portolan",),
     exclude: Sequence[str] = (),
 ) -> None:
-    """Run `portolan push`, then upload every file the remote lacks or holds stale."""
+    """Sync catalog/ to the remote, versions.json last, then verify nothing differs."""
     load_dotenv(catalog.parent / ".env")
     remote = remote or os.environ["PORTOLAN_REMOTE"]
-    envelope = run(catalog, "push", remote, strict=False, command=command)
-    if not envelope["success"]:
-        logger.warning("portolan push failed, repairing: %s", envelope["errors"])
-    store = S3Store.from_url(remote)
-    repair(catalog, store, exclude)
-    if stale := _stale(catalog, store, exclude):
-        msg = f"remote still differs after repair: {stale[:10]}"
+    excludes = [*HIDDEN, *exclude]
+    _sync(catalog, remote, [*excludes, "*versions.json"])
+    _sync(catalog, remote, excludes)
+    if stale := _sync(catalog, remote, excludes, "--dryrun"):
+        msg = f"remote still differs after sync: {stale[:10]}"
         raise RuntimeError(msg)
     logger.info("push verified")
 
 
-def repair(catalog: Path, store: S3Store, exclude: Sequence[str] = ()) -> list[str]:
-    """Upload stale files, versions.json last so it never points at missing bytes."""
-    stale = _stale(catalog, store, exclude)
-    assets = [p for p in stale if Path(p).name != "versions.json"]
-    versions = [p for p in stale if Path(p).name == "versions.json"]
-    for batch in (assets, versions):
-        with ThreadPoolExecutor(UPLOAD_WORKERS) as pool:
-            list(pool.map(lambda p: _upload(store, catalog, p), batch))
-    logger.info("repaired %d files", len(stale))
-    return stale
-
-
-def _stale(catalog: Path, store: S3Store, exclude: Sequence[str] = ()) -> list[str]:
-    """List local files missing on the remote, sized differently, or newer locally."""
-    remote = {
-        m["path"]: (m["size"], m["last_modified"])
-        for batch in obs.list(store, chunk_size=1000)
-        for m in batch
-    }
-    stale = []
-    for path in sorted(catalog.rglob("*")):
-        rel = path.relative_to(catalog)
-        if not path.is_file() or any(p.startswith(".") for p in rel.parts):
-            continue
-        if any(fnmatch(rel.as_posix(), pattern) for pattern in exclude):
-            continue
-        stat = path.stat()
-        size, modified = remote.get(rel.as_posix(), (None, None))
-        local_modified = datetime.fromtimestamp(stat.st_mtime, UTC)
-        if size != stat.st_size or local_modified > modified:
-            stale.append(rel.as_posix())
-    return stale
-
-
-@retry(stop=stop_after_attempt(10), wait=wait_exponential(max=60), reraise=True)
-def _upload(store: S3Store, catalog: Path, rel: str) -> None:
-    """Upload one file, retrying the dropped connections source.coop returns."""
-    obs.put(store, rel, catalog / rel, chunk_size=CHUNK_SIZE, max_concurrency=4)
-    logger.info("uploaded %s", rel)
+def _sync(
+    catalog: Path, remote: str, excludes: Sequence[str], *flags: str
+) -> list[str]:
+    """Run `aws s3 sync` with the repo-root aws.config and return its upload lines."""
+    # aws.config retries each dropped multipart part, which source.coop needs.
+    env = {**os.environ, "AWS_CONFIG_FILE": str(catalog.parent / "aws.config")}
+    args = [arg for pattern in excludes for arg in ("--exclude", pattern)]
+    result = subprocess.run(
+        ["aws", "s3", "sync", str(catalog), remote, "--no-progress", *args, *flags],
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode:
+        msg = f"aws s3 sync exited {result.returncode}: {result.stderr}"
+        raise RuntimeError(msg)
+    lines = result.stdout.splitlines()
+    for line in lines:
+        logger.info(line)
+    return lines

@@ -1184,18 +1184,17 @@ dependencies = [
     { name = "duckdb" },
     { name = "geoparquet-io" },
     { name = "httpx2", extra = ["http2"] },
-    { name = "obstore" },
     { name = "pandas", extra = ["excel"] },
     { name = "portolan-cli" },
     { name = "psutil" },
     { name = "pyarrow" },
     { name = "python-dotenv" },
-    { name = "tenacity" },
     { name = "tylertoo" },
 ]
 
 [package.dev-dependencies]
 dev = [
+    { name = "obstore" },
     { name = "ruff" },
 ]
 
@@ -1204,18 +1203,19 @@ requires-dist = [
     { name = "duckdb", specifier = ">=1.5.4" },
     { name = "geoparquet-io", specifier = ">=1.4.0" },
     { name = "httpx2", extras = ["http2"], specifier = ">=2.16.0" },
-    { name = "obstore", specifier = ">=0.12.0" },
     { name = "pandas", extras = ["excel"], specifier = ">=3.1.0" },
     { name = "portolan-cli", specifier = ">=0.8.0" },
     { name = "psutil", specifier = ">=7.2.2" },
     { name = "pyarrow", specifier = ">=25.0.1" },
     { name = "python-dotenv", specifier = ">=1.2.4" },
-    { name = "tenacity", specifier = ">=9.2.1" },
     { name = "tylertoo", specifier = ">=0.8.0" },
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "ruff", specifier = ">=0.17.2" }]
+dev = [
+    { name = "obstore", specifier = ">=0.12.0" },
+    { name = "ruff", specifier = ">=0.17.2" },
+]
 
 [[package]]
 name = "jmespath"
@@ -3470,15 +3470,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/0f/01/9e4ceacf2974fd3efdba4c237920e2f1958359fa155205db9943216590f8/stac_geoparquet-0.8.3.tar.gz", hash = "sha256:5eb63e3f7221e360b23fd7c201fc00e07c69560d059cea46d40762a392129f87", size = 1970716, upload-time = "2026-10-21T20:44:23.252Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/6d/80/2c790bb91c4928df5d0037f96f2198b71a678efb18de8bea8c27e8f63dd3/stac_geoparquet-0.8.3-py3-none-any.whl", hash = "sha256:d3dad6545206e180903edce60b21992c244cd91ff22622371a79ef0c060a3a40", size = 32894, upload-time = "2026-10-21T20:44:21.833Z" },
-]
-
-[[package]]
-name = "tenacity"
-version = "9.2.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/82/9e/497c1c8ebe5a5b5d1d4a7511aea22c0bb1a97e3170d98abdef0e1b34265a/tenacity-9.2.1.tar.gz", hash = "sha256:a606b5c808d0cded4a359d5b9932d867ff2a6a6b64d37350260fd01bbdf83839", size = 58261, upload-time = "2026-10-07T12:13:01.633Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/d6/26/1ff2b0721ac66a3ec5b1402b333110b352ab0a8724052ac279a7b82d40c4/tenacity-9.2.1-py3-none-any.whl", hash = "sha256:9e56f17539296baab7beabb08b92f6ee3d7be92d8be72d763360677c2ad6580e", size = 32310, upload-time = "2026-10-07T12:13:00.102Z" },
 ]
 
 [[package]]
