@@ -10,6 +10,8 @@ tmp/
 !.claude/settings.json
 .playwright-cli/
 inputs/gaul/
+inputs/line_decisions.json
+inputs/polygon_decisions.json
 
 .env*
 !.env.example

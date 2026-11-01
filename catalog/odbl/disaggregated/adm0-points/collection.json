@@ -13,7 +13,8 @@
     {
       "rel": "parent",
       "href": "../catalog.json",
-      "type": "application/json"
+      "type": "application/json",
+      "title": "Disaggregated view"
     },
     {
       "rel": "agents",
@@ -105,8 +106,8 @@
     "adm0_points": {
       "href": "./adm0_points.parquet",
       "type": "application/vnd.apache.parquet",
-      "file:size": 27080,
-      "file:checksum": "1220f532e3e8b059da39f5501342b9f00771a7169210f45cd814a86b77f27bb40490",
+      "file:size": 27316,
+      "file:checksum": "1220b5432cdb676ff0f27779c6846b98b894d5e10b37605813251179f1ebd8652254",
       "roles": [
         "data"
       ]
@@ -115,31 +116,40 @@
       "href": "./adm0_points.pmtiles",
       "type": "application/vnd.pmtiles",
       "title": "adm0_points (vector tiles)",
+      "file:size": 294253,
+      "file:checksum": "122033fc8ee642f2f559f51a0f5df2f28953981b177f06d8edfbdb3d83da48a19b88",
       "roles": [
         "visual"
-      ],
-      "file:size": 283768,
-      "file:checksum": "12200ca4c9c2ff809fc87938e4b751ab8f3e185962e26c6b137b269ca0d2385e802e"
+      ]
     },
     "styles/default": {
       "href": "./styles/default.json",
       "type": "application/vnd.mapbox.style+json",
+      "title": "Default",
+      "file:size": 460,
+      "file:checksum": "1220e3e5ed5462d406cffe530535f8e942e4561d60f3fa9849739a4febfbd0161f5d",
       "roles": [
         "style",
         "default"
-      ],
-      "title": "Default",
-      "file:size": 460,
-      "file:checksum": "1220e3e5ed5462d406cffe530535f8e942e4561d60f3fa9849739a4febfbd0161f5d"
+      ]
     },
     "thumbnail": {
       "href": "./adm0_points.thumb.jpg",
       "type": "image/jpeg",
+      "file:size": 8162,
+      "file:checksum": "1220038f8cbeb144ea339a31f76b6294a4557d0733ae64cdbadcf5a3b87cd3b9bc1c",
       "roles": [
         "thumbnail"
-      ],
-      "file:size": 8162,
-      "file:checksum": "1220038f8cbeb144ea339a31f76b6294a4557d0733ae64cdbadcf5a3b87cd3b9bc1c"
+      ]
+    },
+    "documentation": {
+      "href": "./README.md",
+      "type": "text/markdown",
+      "file:size": 1197,
+      "file:checksum": "1220a49cfe8bc08cd3ca786a391e6fa1ff9f6de50244029e83e63460459432907a66",
+      "roles": [
+        "documentation"
+      ]
     }
   }
 }

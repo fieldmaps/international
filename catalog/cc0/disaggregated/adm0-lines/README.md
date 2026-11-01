@@ -15,11 +15,12 @@ Land boundary lines between admin level 0 areas. Coastlines are not included. Di
 
 | File | Size | Checksum |
 |------|------|----------|
-| ./adm0_lines.pmtiles | 1.7 MB | 122021db64aa... |
-| ./adm0_lines.parquet | 45.9 MB | 12200c0f3f4a... |
-| ./adm0_lines.pmtiles | 1.7 MB | 122021db64aa... |
+| ./adm0_lines.pmtiles | 1.7 MB | 122004e181e5... |
+| ./adm0_lines.parquet | 45.9 MB | 12206340d5d4... |
+| ./adm0_lines.pmtiles | 1.7 MB | 122004e181e5... |
 | ./styles/default.json | 446 B | 1220042e288c... |
 | ./adm0_lines.thumb.jpg | 9.6 KB | 1220e39c6ee7... |
+| ./README.md | 1.2 KB | 1220fb600000... |
 
 ## Quick Start
 

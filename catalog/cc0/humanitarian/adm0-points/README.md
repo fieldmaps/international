@@ -15,10 +15,11 @@ One label point per admin level 0 area. Humanitarian view: disputed and autonomo
 
 | File | Size | Checksum |
 |------|------|----------|
-| ./adm0_points.parquet | 26.2 KB | 1220d1a6ccf0... |
-| ./adm0_points.pmtiles | 270.0 KB | 122059bd6a0e... |
+| ./adm0_points.parquet | 23.8 KB | 1220eed17777... |
+| ./adm0_points.pmtiles | 253.4 KB | 1220756d4b95... |
 | ./styles/default.json | 460 B | 1220e3e5ed54... |
 | ./adm0_points.thumb.jpg | 8.0 KB | 1220e8e7986f... |
+| ./README.md | 1.1 KB | 1220545d5ff3... |
 
 ## Quick Start
 

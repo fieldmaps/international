@@ -13,7 +13,8 @@
     {
       "rel": "parent",
       "href": "../catalog.json",
-      "type": "application/json"
+      "type": "application/json",
+      "title": "Humanitarian view"
     },
     {
       "rel": "agents",
@@ -46,8 +47,8 @@
   "pmtiles:max_zoom": 6,
   "pmtiles:tile_type": "mvt",
   "pmtiles:center": [
-    0.3082512,
-    1.4623211,
+    0.8989378,
+    0.4026662,
     3
   ],
   "pmtiles:layers": [
@@ -58,10 +59,10 @@
     "spatial": {
       "bbox": [
         [
-          -177.3784925,
+          -176.1971194,
           -77.9021863,
           177.9949951,
-          80.8268285
+          78.7075189
         ]
       ]
     },
@@ -105,8 +106,8 @@
     "adm0_points": {
       "href": "./adm0_points.parquet",
       "type": "application/vnd.apache.parquet",
-      "file:size": 26846,
-      "file:checksum": "1220b08cb2d94d13ca5676f27f9c14b8a39981966cbad9c8736f76a6b383c2773223",
+      "file:size": 24360,
+      "file:checksum": "122016ad33c345cf8e88446087df29fce7c548fc1cc099c4d8882554654ee8f21fef",
       "roles": [
         "data"
       ]
@@ -115,31 +116,40 @@
       "href": "./adm0_points.pmtiles",
       "type": "application/vnd.pmtiles",
       "title": "adm0_points (vector tiles)",
+      "file:size": 265878,
+      "file:checksum": "1220383c9105e4c242e4566b7ca31f137822b596d8fb7c47ea423fb265959970c29d",
       "roles": [
         "visual"
-      ],
-      "file:size": 282595,
-      "file:checksum": "12206e91d8a413bbcf6cb34fdfda6e0510650c437f5c6be0c623343c75d52ebf1d7e"
+      ]
     },
     "styles/default": {
       "href": "./styles/default.json",
       "type": "application/vnd.mapbox.style+json",
+      "title": "Default",
+      "file:size": 460,
+      "file:checksum": "1220e3e5ed5462d406cffe530535f8e942e4561d60f3fa9849739a4febfbd0161f5d",
       "roles": [
         "style",
         "default"
-      ],
-      "title": "Default",
-      "file:size": 460,
-      "file:checksum": "1220e3e5ed5462d406cffe530535f8e942e4561d60f3fa9849739a4febfbd0161f5d"
+      ]
     },
     "thumbnail": {
       "href": "./adm0_points.thumb.jpg",
       "type": "image/jpeg",
+      "file:size": 8119,
+      "file:checksum": "1220dee02f9e2cce9a45789258b90528a8394adc559ff4c2d64c75bd9724de4d5da9",
       "roles": [
         "thumbnail"
-      ],
-      "file:size": 8119,
-      "file:checksum": "1220dee02f9e2cce9a45789258b90528a8394adc559ff4c2d64c75bd9724de4d5da9"
+      ]
+    },
+    "documentation": {
+      "href": "./README.md",
+      "type": "text/markdown",
+      "file:size": 1207,
+      "file:checksum": "1220b668462e2a89d0cf54c45073bc7af305440238919541048a37805f9724d88857",
+      "roles": [
+        "documentation"
+      ]
     }
   }
 }

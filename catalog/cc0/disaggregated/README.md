@@ -14,7 +14,7 @@ Disputed and autonomous areas are separate features: Abkhazia, Ajaria, Vojvodina
 
 **Spatial Extent**
 
-- West: -180.0000, South: -85.0500, East: 180.0000, North: 83.6663
+- West: -180.0000, South: -85.0511, East: 180.0000, North: 83.6663
 
 ---
 

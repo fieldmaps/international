@@ -1,6 +1,6 @@
 {
   "spec_version": "1.0.0",
-  "current_version": "1.1.0",
+  "current_version": "1.3.0",
   "versions": [
     {
       "version": "1.0.0",
@@ -55,6 +55,163 @@
       "changes": [
         "adm0_polygons.thumb.jpg"
       ],
+      "schema": {
+        "type": "unknown",
+        "fingerprint": {
+          "columns": [],
+          "types": {}
+        }
+      },
+      "message": ""
+    },
+    {
+      "version": "1.1.1",
+      "created": "2026-10-31T21:28:24.614627Z",
+      "breaking": false,
+      "assets": {
+        "adm0_polygons.pmtiles": {
+          "sha256": "e0d94cb4956178ad4d1035e94ce0220d97caaefb53b0aaf2393ba6b4ab8dbd52",
+          "size_bytes": 17967933,
+          "href": "cc0/disaggregated/adm0-polygons/adm0_polygons.pmtiles",
+          "mtime": 1793482102.676951
+        },
+        "adm0_polygons.parquet": {
+          "sha256": "832ed95ae82cb7f8c2bc6f992a3898042d5a77def16690f9800e2053a6c0a0c2",
+          "size_bytes": 693683151,
+          "href": "cc0/disaggregated/adm0-polygons/adm0_polygons.parquet",
+          "source_mtime": 1793481557.76943,
+          "mtime": 1793481557.76943,
+          "feature_count": 328,
+          "schema_fingerprint": "e7727fd8589f28c1"
+        },
+        "adm0_polygons.thumb.jpg": {
+          "sha256": "a74a94968e0687a7d42abd63abc91fa354f0a7f89e70e0dc1e242fe545f48180",
+          "size_bytes": 15936,
+          "href": "cc0/disaggregated/adm0-polygons/adm0_polygons.thumb.jpg",
+          "mtime": 1791337232.708729
+        },
+        "README.md": {
+          "sha256": "923daadd0f0496432deb3701c927fdad8f2943485cdcbc5d9c1ebbc85158f32d",
+          "size_bytes": 1201,
+          "href": "cc0/disaggregated/adm0-polygons/README.md",
+          "mtime": 1793453081.020946
+        }
+      },
+      "changes": [
+        "adm0_polygons.pmtiles",
+        "README.md",
+        "adm0_polygons.parquet"
+      ]
+    },
+    {
+      "version": "1.2.0",
+      "created": "2026-10-31T21:28:25.832754Z",
+      "breaking": false,
+      "assets": {
+        "adm0_polygons.pmtiles": {
+          "sha256": "e0d94cb4956178ad4d1035e94ce0220d97caaefb53b0aaf2393ba6b4ab8dbd52",
+          "size_bytes": 17967933,
+          "href": "cc0/disaggregated/adm0-polygons/adm0_polygons.pmtiles",
+          "mtime": 1793482102.676951
+        },
+        "adm0_polygons.parquet": {
+          "sha256": "832ed95ae82cb7f8c2bc6f992a3898042d5a77def16690f9800e2053a6c0a0c2",
+          "size_bytes": 693683151,
+          "href": "cc0/disaggregated/adm0-polygons/adm0_polygons.parquet",
+          "mtime": 1793481557.76943
+        },
+        "adm0_polygons.thumb.jpg": {
+          "sha256": "a74a94968e0687a7d42abd63abc91fa354f0a7f89e70e0dc1e242fe545f48180",
+          "size_bytes": 15936,
+          "href": "cc0/disaggregated/adm0-polygons/adm0_polygons.thumb.jpg",
+          "mtime": 1791337232.708729
+        },
+        "README.md": {
+          "sha256": "923daadd0f0496432deb3701c927fdad8f2943485cdcbc5d9c1ebbc85158f32d",
+          "size_bytes": 1201,
+          "href": "cc0/disaggregated/adm0-polygons/README.md",
+          "mtime": 1793453081.020946
+        }
+      },
+      "changes": [],
+      "schema": {
+        "type": "unknown",
+        "fingerprint": {
+          "columns": [],
+          "types": {}
+        }
+      },
+      "message": ""
+    },
+    {
+      "version": "1.2.1",
+      "created": "2026-11-01T00:25:38.579223Z",
+      "breaking": false,
+      "assets": {
+        "adm0_polygons.pmtiles": {
+          "sha256": "126c2953eaaf14419269e8a4d18cad171fc11ae3f5634dc2e7196bbef6a20623",
+          "size_bytes": 17967694,
+          "href": "cc0/disaggregated/adm0-polygons/adm0_polygons.pmtiles",
+          "mtime": 1793492735.9434893
+        },
+        "adm0_polygons.parquet": {
+          "sha256": "c66900b6701a12d845118e4f7d46edc1443c520fa08893df694d0ae586b4ec32",
+          "size_bytes": 693682760,
+          "href": "cc0/disaggregated/adm0-polygons/adm0_polygons.parquet",
+          "source_mtime": 1793492281.2040641,
+          "mtime": 1793492281.2040641,
+          "feature_count": 328,
+          "schema_fingerprint": "e7727fd8589f28c1"
+        },
+        "adm0_polygons.thumb.jpg": {
+          "sha256": "a74a94968e0687a7d42abd63abc91fa354f0a7f89e70e0dc1e242fe545f48180",
+          "size_bytes": 15936,
+          "href": "cc0/disaggregated/adm0-polygons/adm0_polygons.thumb.jpg",
+          "mtime": 1791337232.708729
+        },
+        "README.md": {
+          "sha256": "923daadd0f0496432deb3701c927fdad8f2943485cdcbc5d9c1ebbc85158f32d",
+          "size_bytes": 1201,
+          "href": "cc0/disaggregated/adm0-polygons/README.md",
+          "mtime": 1793453081.020946
+        }
+      },
+      "changes": [
+        "adm0_polygons.pmtiles",
+        "adm0_polygons.parquet"
+      ]
+    },
+    {
+      "version": "1.3.0",
+      "created": "2026-11-01T00:25:39.762261Z",
+      "breaking": false,
+      "assets": {
+        "adm0_polygons.pmtiles": {
+          "sha256": "126c2953eaaf14419269e8a4d18cad171fc11ae3f5634dc2e7196bbef6a20623",
+          "size_bytes": 17967694,
+          "href": "cc0/disaggregated/adm0-polygons/adm0_polygons.pmtiles",
+          "mtime": 1793492735.9434893
+        },
+        "adm0_polygons.parquet": {
+          "sha256": "c66900b6701a12d845118e4f7d46edc1443c520fa08893df694d0ae586b4ec32",
+          "size_bytes": 693682760,
+          "href": "cc0/disaggregated/adm0-polygons/adm0_polygons.parquet",
+          "mtime": 1793492281.2040641
+        },
+        "adm0_polygons.thumb.jpg": {
+          "sha256": "a74a94968e0687a7d42abd63abc91fa354f0a7f89e70e0dc1e242fe545f48180",
+          "size_bytes": 15936,
+          "href": "cc0/disaggregated/adm0-polygons/adm0_polygons.thumb.jpg",
+          "mtime": 1791337232.708729
+        },
+        "README.md": {
+          "sha256": "923daadd0f0496432deb3701c927fdad8f2943485cdcbc5d9c1ebbc85158f32d",
+          "size_bytes": 1201,
+          "href": "cc0/disaggregated/adm0-polygons/README.md",
+          "mtime": 1793453081.020946
+        }
+      },
+      "changes": [],
       "schema": {
         "type": "unknown",
         "fingerprint": {

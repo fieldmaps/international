@@ -14,7 +14,7 @@ Disputed and autonomous areas are grouped with a neighbouring area, matching com
 
 **Spatial Extent**
 
-- West: -180.0000, South: -85.0500, East: 180.0000, North: 83.6663
+- West: -180.0000, South: -85.0511, East: 180.0000, North: 83.6663
 
 ---
 
