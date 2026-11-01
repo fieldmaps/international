@@ -41,7 +41,7 @@ Source publication dates are read from the `.date` files written during download
    - `_04f_cleanup.main`: drops per-world tables to free memory before the next world iteration
 2. `_04g_portolan.main`: builds a PMTiles file beside each catalog parquet with tylertoo, then `portolan add <collection> --pmtiles`, which registers the existing PMTiles, default style, and thumbnail
 
-**`_04_catalog.finalize()`** runs `portolan check --data-scope local` once after all lands.
+**`_04_catalog.finalize()`** runs `portolan check --data-scope local` once after all lands, then `fieldmaps_publish.push` when `--push` is set.
 
 **`_05_export.main(land)`** (`app/_05_export/`): `_05a_outputs.main` copies each catalog parquet to `outputs/adm0/{land}/{world}/` and derives GPKG + GDB (EPSG:4326) + XLSX from it, verifying row counts. **`_05_export.finalize()`** calls `_05b_meta.main()` to write the metadata JSON/CSV/XLSX catalog.
 
@@ -168,6 +168,7 @@ Flags:
 - `--step {_01_download,_02_prepare,_03_build,_04_catalog,_05_export}` / `STEP=...` — run only the named step; default runs all five. Implies `--debug`.
 - `--land {osm,usgs}` / `LAND=...` — process only one land source (default: both). Use for fast iteration; verify with both before merging. Implies `--debug`.
 - `--bounds {lsib,gaul}` / `BOUNDS=...`: boundary source (default: `lsib`). `gaul` builds the experimental GAUL variant into `catalog/{cc-by,odbl}/gaul/`, which is local-only and never published. Implies `--debug`.
+- `--push` / `PUSH=1`: push the catalog to Source Cooperative after `_04_catalog.finalize()` validates it (see Publishing).
 
 ### Sub-step iteration with `iter.py`
 
@@ -194,24 +195,13 @@ Check the keys (expect `assumed-role/_default/...`):
 env -i HOME=$HOME PATH=$PATH bash -c 'set -a; source .env; set +a; aws sts get-caller-identity --endpoint-url https://data.source.coop/.sts'
 ```
 
-Push from `catalog/`:
+Push with `--push` / `PUSH=1`: after `portolan check`, `_04_catalog.finalize()` runs `aws s3 sync` of `catalog/` to `PORTOLAN_REMOTE` with `AWS_CONFIG_FILE=aws.config` (per-part retries, classic transfer client), first everything except `versions.json`, then the `versions.json` files, skipping hidden paths and `*/gaul/*`. A failed upload makes `aws s3 sync` exit non-zero and the push raises. Needs the AWS CLI on PATH. To push an already-built catalog without rerunning `_04_catalog`:
 
 ```bash
-env -i HOME=$HOME PATH=$PATH bash -c 'set -a; source ../.env; set +a; exec ../.venv/bin/portolan push s3://fieldmaps/international/ -v --max-connections 32'
+uv run python -c 'from app.config import catalog_dir; from app._04_catalog import fieldmaps_publish as p; p.push(catalog_dir, exclude=("*/gaul/*",))'
 ```
 
-Large files (about 100 MB and up) fail in `portolan push`: connections to `data.source.coop` drop mid-upload (TLS read failure), obstore does not retry them, and the follow-up abort fails with `SignatureDoesNotMatch` / `NoSuchBucket`, which hides the real error. For a collection that fails this way, upload its assets and `versions.json` with the AWS CLI using `aws.config` (retries, classic transfer client), then rerun the push above, which skips them and syncs metadata:
-
-```bash
-c=odbl/humanitarian/adm0-polygons g=polygons
-env -i HOME=$HOME PATH=$PATH AWS_CONFIG_FILE=$PWD/aws.config bash -c "set -a; source .env; set +a; for f in adm0_$g.parquet adm0_$g.pmtiles adm0_$g.thumb.jpg versions.json; do aws s3 cp catalog/$c/\$f s3://fieldmaps/international/$c/\$f --only-show-errors; done"
-```
-
-`portolan push` skips some metadata (collections with no new version, intermediate `AGENTS.md`), so finish every publish by syncing all `.json`/`.md` except `versions.json`:
-
-```bash
-env -i HOME=$HOME PATH=$PATH bash -c 'set -a; source .env; set +a; aws s3 sync catalog/ s3://fieldmaps/international/ --exclude "*" --include "*.json" --include "*.md" --exclude ".portolan/*" --exclude "*/.portolan/*" --exclude "*versions.json"'
-```
+`app/_04_catalog/fieldmaps_publish.py` is kept byte-identical with `fieldmaps/subnational`; change it in both repos.
 
 ## Coding preferences
 
