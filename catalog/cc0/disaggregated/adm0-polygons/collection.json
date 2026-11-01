@@ -98,8 +98,8 @@
     "adm0_polygons": {
       "href": "./adm0_polygons.parquet",
       "type": "application/vnd.apache.parquet",
-      "file:size": 693682760,
-      "file:checksum": "1220c66900b6701a12d845118e4f7d46edc1443c520fa08893df694d0ae586b4ec32",
+      "file:size": 693683763,
+      "file:checksum": "122021548554444845505a61a3a082d2786f2315330ef2a3551d6c110e72a0eebf44",
       "roles": [
         "data"
       ]
@@ -108,8 +108,8 @@
       "href": "./adm0_polygons.pmtiles",
       "type": "application/vnd.pmtiles",
       "title": "adm0_polygons (vector tiles)",
-      "file:size": 446602234,
-      "file:checksum": "1220a9e21e99d3aef3c1a38eb455602a757b72db98ce88fa6ffe43a622f1d4ae0794",
+      "file:size": 446602239,
+      "file:checksum": "122073aaa9254962bb2121a9d965aa9f53158608006f0a16d9efe72a4c9986ee50a9",
       "roles": [
         "visual"
       ]
