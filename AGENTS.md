@@ -39,7 +39,7 @@ Source publication dates are read from the `.date` files written during download
    - `_04d_parquet.main`: writes Hilbert-sorted GeoParquet 2.0 (no bbox column) via geoparquet-io to `catalog/{cc0,odbl}/{humanitarian,disaggregated}/adm0-{polygons,lines,points}/` (land `usgs` → `cc0`, `osm` → `odbl`; world `intl` → `humanitarian`, `all` → `disaggregated`); polygons get one row per row group; voronoi (intl only) goes to `outputs/`
    - `_04e_validate.main`: checks final lines/polygons/points tables (geometry validity, lon/lat bounds, ID uniqueness, attribute-join completeness, polygon topology, points-to-polygons row parity excluding `label_{world} = 0` parts) before world-scoped tables are dropped
    - `_04f_cleanup.main`: drops per-world tables to free memory before the next world iteration
-2. `_04g_portolan.main`: builds a PMTiles file beside each catalog parquet with tylertoo, then `portolan add <collection> --pmtiles`, which registers the existing PMTiles, default style, and thumbnail
+2. `_04g_portolan.main`: builds a PMTiles file beside each catalog parquet with tylertoo, then `portolan add <collection>`, which registers the PMTiles, default style, and thumbnail
 
 **`_04_catalog.finalize()`** runs `portolan check --data-scope local` once after all lands, then `fieldmaps_publish.push` when `--push` is set.
 

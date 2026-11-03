@@ -44,7 +44,6 @@ def main(conn: DuckDBPyConnection, land: str) -> None:
             fieldmaps_publish.add(
                 catalog_dir,
                 str(parquet.parent.relative_to(catalog_dir)),
-                "--pmtiles",
                 "--datetime",
                 wld_date.isoformat(),
             )
