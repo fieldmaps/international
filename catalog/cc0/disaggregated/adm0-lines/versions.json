@@ -1,6 +1,6 @@
 {
   "spec_version": "1.0.0",
-  "current_version": "1.6.0",
+  "current_version": "1.9.0",
   "versions": [
     {
       "version": "1.0.0",
@@ -469,6 +469,202 @@
           "size_bytes": 40454931,
           "href": "cc0/disaggregated/adm0-lines/adm0_lines.pmtiles",
           "mtime": 1793538191.0375943
+        },
+        "adm0_lines.thumb.jpg": {
+          "sha256": "e39c6ee74b2f83420f79f3b854b3c78101cf5723de57390d1cb5fc54f77728ca",
+          "size_bytes": 9849,
+          "href": "cc0/disaggregated/adm0-lines/adm0_lines.thumb.jpg",
+          "mtime": 1791337281.5978174
+        },
+        "README.md": {
+          "sha256": "9d2ba6c0d195a44862c73611f58c1da3baea8ed12e88e86457a1f14a489da06d",
+          "size_bytes": 1257,
+          "href": "cc0/disaggregated/adm0-lines/README.md",
+          "mtime": 1793494158.8672397
+        }
+      },
+      "changes": [],
+      "schema": {
+        "type": "unknown",
+        "fingerprint": {
+          "columns": [],
+          "types": {}
+        }
+      },
+      "message": ""
+    },
+    {
+      "version": "1.6.1",
+      "created": "2026-11-01T19:57:00.297031Z",
+      "breaking": false,
+      "assets": {
+        "adm0_lines.parquet": {
+          "sha256": "e4a72f13645f42013833295b56aec3765dc1ae9a4480063be5e51e6a40c641ca",
+          "size_bytes": 48185462,
+          "href": "cc0/disaggregated/adm0-lines/adm0_lines.parquet",
+          "source_mtime": 1793562593.3629036,
+          "mtime": 1793562593.3629036,
+          "feature_count": 425,
+          "schema_fingerprint": "effc5bf0fa0afe7b"
+        },
+        "adm0_lines.pmtiles": {
+          "sha256": "9fcc6cb37efa96533df57c8f3919258de02c4b82c2ac4f6a7b1a3b4703b6fc1f",
+          "size_bytes": 42165400,
+          "href": "cc0/disaggregated/adm0-lines/adm0_lines.pmtiles",
+          "mtime": 1793563012.7182572
+        },
+        "adm0_lines.thumb.jpg": {
+          "sha256": "e39c6ee74b2f83420f79f3b854b3c78101cf5723de57390d1cb5fc54f77728ca",
+          "size_bytes": 9849,
+          "href": "cc0/disaggregated/adm0-lines/adm0_lines.thumb.jpg",
+          "mtime": 1791337281.5978174
+        },
+        "README.md": {
+          "sha256": "9d2ba6c0d195a44862c73611f58c1da3baea8ed12e88e86457a1f14a489da06d",
+          "size_bytes": 1257,
+          "href": "cc0/disaggregated/adm0-lines/README.md",
+          "mtime": 1793494158.8672397
+        }
+      },
+      "changes": [
+        "adm0_lines.parquet",
+        "adm0_lines.pmtiles"
+      ]
+    },
+    {
+      "version": "1.7.0",
+      "created": "2026-11-01T19:57:00.510199Z",
+      "breaking": false,
+      "assets": {
+        "adm0_lines.parquet": {
+          "sha256": "e4a72f13645f42013833295b56aec3765dc1ae9a4480063be5e51e6a40c641ca",
+          "size_bytes": 48185462,
+          "href": "cc0/disaggregated/adm0-lines/adm0_lines.parquet",
+          "mtime": 1793562593.3629036
+        },
+        "adm0_lines.pmtiles": {
+          "sha256": "9fcc6cb37efa96533df57c8f3919258de02c4b82c2ac4f6a7b1a3b4703b6fc1f",
+          "size_bytes": 42165400,
+          "href": "cc0/disaggregated/adm0-lines/adm0_lines.pmtiles",
+          "mtime": 1793563012.7182572
+        },
+        "adm0_lines.thumb.jpg": {
+          "sha256": "e39c6ee74b2f83420f79f3b854b3c78101cf5723de57390d1cb5fc54f77728ca",
+          "size_bytes": 9849,
+          "href": "cc0/disaggregated/adm0-lines/adm0_lines.thumb.jpg",
+          "mtime": 1791337281.5978174
+        },
+        "README.md": {
+          "sha256": "9d2ba6c0d195a44862c73611f58c1da3baea8ed12e88e86457a1f14a489da06d",
+          "size_bytes": 1257,
+          "href": "cc0/disaggregated/adm0-lines/README.md",
+          "mtime": 1793494158.8672397
+        }
+      },
+      "changes": [],
+      "schema": {
+        "type": "unknown",
+        "fingerprint": {
+          "columns": [],
+          "types": {}
+        }
+      },
+      "message": ""
+    },
+    {
+      "version": "1.8.0",
+      "created": "2026-11-01T20:15:26.579602Z",
+      "breaking": false,
+      "assets": {
+        "adm0_lines.parquet": {
+          "sha256": "e4a72f13645f42013833295b56aec3765dc1ae9a4480063be5e51e6a40c641ca",
+          "size_bytes": 48185462,
+          "href": "cc0/disaggregated/adm0-lines/adm0_lines.parquet",
+          "mtime": 1793562593.3629036
+        },
+        "adm0_lines.pmtiles": {
+          "sha256": "9fcc6cb37efa96533df57c8f3919258de02c4b82c2ac4f6a7b1a3b4703b6fc1f",
+          "size_bytes": 42165400,
+          "href": "cc0/disaggregated/adm0-lines/adm0_lines.pmtiles",
+          "mtime": 1793563012.7182572
+        },
+        "adm0_lines.thumb.jpg": {
+          "sha256": "e39c6ee74b2f83420f79f3b854b3c78101cf5723de57390d1cb5fc54f77728ca",
+          "size_bytes": 9849,
+          "href": "cc0/disaggregated/adm0-lines/adm0_lines.thumb.jpg",
+          "mtime": 1791337281.5978174
+        },
+        "README.md": {
+          "sha256": "9d2ba6c0d195a44862c73611f58c1da3baea8ed12e88e86457a1f14a489da06d",
+          "size_bytes": 1257,
+          "href": "cc0/disaggregated/adm0-lines/README.md",
+          "mtime": 1793494158.8672397
+        }
+      },
+      "changes": [],
+      "schema": {
+        "type": "unknown",
+        "fingerprint": {
+          "columns": [],
+          "types": {}
+        }
+      },
+      "message": ""
+    },
+    {
+      "version": "1.8.1",
+      "created": "2026-11-03T13:35:04.241169Z",
+      "breaking": false,
+      "assets": {
+        "adm0_lines.parquet": {
+          "sha256": "74bd5b9d7741dab16dc6447afa40e658ce68d2db6f390b92d87d3ae966f218a0",
+          "size_bytes": 48185026,
+          "href": "cc0/disaggregated/adm0-lines/adm0_lines.parquet",
+          "source_mtime": 1793712582.4012241,
+          "mtime": 1793712582.4012241,
+          "feature_count": 425,
+          "schema_fingerprint": "effc5bf0fa0afe7b"
+        },
+        "adm0_lines.pmtiles": {
+          "sha256": "6bb1dce6f6c95021ac8ab8583a712970060874962114fff2c6357bc1cb37ce08",
+          "size_bytes": 42165409,
+          "href": "cc0/disaggregated/adm0-lines/adm0_lines.pmtiles",
+          "mtime": 1793712902.291943
+        },
+        "adm0_lines.thumb.jpg": {
+          "sha256": "e39c6ee74b2f83420f79f3b854b3c78101cf5723de57390d1cb5fc54f77728ca",
+          "size_bytes": 9849,
+          "href": "cc0/disaggregated/adm0-lines/adm0_lines.thumb.jpg",
+          "mtime": 1791337281.5978174
+        },
+        "README.md": {
+          "sha256": "9d2ba6c0d195a44862c73611f58c1da3baea8ed12e88e86457a1f14a489da06d",
+          "size_bytes": 1257,
+          "href": "cc0/disaggregated/adm0-lines/README.md",
+          "mtime": 1793494158.8672397
+        }
+      },
+      "changes": [
+        "adm0_lines.parquet",
+        "adm0_lines.pmtiles"
+      ]
+    },
+    {
+      "version": "1.9.0",
+      "created": "2026-11-03T13:35:04.436173Z",
+      "breaking": false,
+      "assets": {
+        "adm0_lines.parquet": {
+          "sha256": "74bd5b9d7741dab16dc6447afa40e658ce68d2db6f390b92d87d3ae966f218a0",
+          "size_bytes": 48185026,
+          "href": "cc0/disaggregated/adm0-lines/adm0_lines.parquet",
+          "mtime": 1793712582.4012241
+        },
+        "adm0_lines.pmtiles": {
+          "sha256": "6bb1dce6f6c95021ac8ab8583a712970060874962114fff2c6357bc1cb37ce08",
+          "size_bytes": 42165409,
+          "href": "cc0/disaggregated/adm0-lines/adm0_lines.pmtiles",
+          "mtime": 1793712902.291943
         },
         "adm0_lines.thumb.jpg": {
           "sha256": "e39c6ee74b2f83420f79f3b854b3c78101cf5723de57390d1cb5fc54f77728ca",

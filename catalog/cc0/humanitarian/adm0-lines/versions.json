@@ -1,6 +1,6 @@
 {
   "spec_version": "1.0.0",
-  "current_version": "1.6.0",
+  "current_version": "1.9.0",
   "versions": [
     {
       "version": "1.0.0",
@@ -469,6 +469,202 @@
           "size_bytes": 40299060,
           "href": "cc0/humanitarian/adm0-lines/adm0_lines.pmtiles",
           "mtime": 1793537658.9019525
+        },
+        "adm0_lines.thumb.jpg": {
+          "sha256": "1f1305fee220c2a79522374ba713fe4ebb96b3814b056c690f7b4e28abaeb1ce",
+          "size_bytes": 9850,
+          "href": "cc0/humanitarian/adm0-lines/adm0_lines.thumb.jpg",
+          "mtime": 1791337046.8100843
+        },
+        "README.md": {
+          "sha256": "361b8b2d06390de6892347afb3275a4336334d08f6224550a471c9609f794517",
+          "size_bytes": 1267,
+          "href": "cc0/humanitarian/adm0-lines/README.md",
+          "mtime": 1793494158.8698726
+        }
+      },
+      "changes": [],
+      "schema": {
+        "type": "unknown",
+        "fingerprint": {
+          "columns": [],
+          "types": {}
+        }
+      },
+      "message": ""
+    },
+    {
+      "version": "1.6.1",
+      "created": "2026-11-01T19:56:27.100823Z",
+      "breaking": false,
+      "assets": {
+        "adm0_lines.parquet": {
+          "sha256": "a3aee6c6fff86afc8edaddc0d55e1ddbce6b77c40fb21d89c343dc22ab94908a",
+          "size_bytes": 47994849,
+          "href": "cc0/humanitarian/adm0-lines/adm0_lines.parquet",
+          "source_mtime": 1793562127.761981,
+          "mtime": 1793562127.761981,
+          "feature_count": 407,
+          "schema_fingerprint": "effc5bf0fa0afe7b"
+        },
+        "adm0_lines.pmtiles": {
+          "sha256": "078958cef96cb485f5a51ae5836302f54dd2c9a6a3442c915786ca95401f4046",
+          "size_bytes": 41975467,
+          "href": "cc0/humanitarian/adm0-lines/adm0_lines.pmtiles",
+          "mtime": 1793562977.9988868
+        },
+        "adm0_lines.thumb.jpg": {
+          "sha256": "1f1305fee220c2a79522374ba713fe4ebb96b3814b056c690f7b4e28abaeb1ce",
+          "size_bytes": 9850,
+          "href": "cc0/humanitarian/adm0-lines/adm0_lines.thumb.jpg",
+          "mtime": 1791337046.8100843
+        },
+        "README.md": {
+          "sha256": "361b8b2d06390de6892347afb3275a4336334d08f6224550a471c9609f794517",
+          "size_bytes": 1267,
+          "href": "cc0/humanitarian/adm0-lines/README.md",
+          "mtime": 1793494158.8698726
+        }
+      },
+      "changes": [
+        "adm0_lines.parquet",
+        "adm0_lines.pmtiles"
+      ]
+    },
+    {
+      "version": "1.7.0",
+      "created": "2026-11-01T19:56:27.324074Z",
+      "breaking": false,
+      "assets": {
+        "adm0_lines.parquet": {
+          "sha256": "a3aee6c6fff86afc8edaddc0d55e1ddbce6b77c40fb21d89c343dc22ab94908a",
+          "size_bytes": 47994849,
+          "href": "cc0/humanitarian/adm0-lines/adm0_lines.parquet",
+          "mtime": 1793562127.761981
+        },
+        "adm0_lines.pmtiles": {
+          "sha256": "078958cef96cb485f5a51ae5836302f54dd2c9a6a3442c915786ca95401f4046",
+          "size_bytes": 41975467,
+          "href": "cc0/humanitarian/adm0-lines/adm0_lines.pmtiles",
+          "mtime": 1793562977.9988868
+        },
+        "adm0_lines.thumb.jpg": {
+          "sha256": "1f1305fee220c2a79522374ba713fe4ebb96b3814b056c690f7b4e28abaeb1ce",
+          "size_bytes": 9850,
+          "href": "cc0/humanitarian/adm0-lines/adm0_lines.thumb.jpg",
+          "mtime": 1791337046.8100843
+        },
+        "README.md": {
+          "sha256": "361b8b2d06390de6892347afb3275a4336334d08f6224550a471c9609f794517",
+          "size_bytes": 1267,
+          "href": "cc0/humanitarian/adm0-lines/README.md",
+          "mtime": 1793494158.8698726
+        }
+      },
+      "changes": [],
+      "schema": {
+        "type": "unknown",
+        "fingerprint": {
+          "columns": [],
+          "types": {}
+        }
+      },
+      "message": ""
+    },
+    {
+      "version": "1.8.0",
+      "created": "2026-11-01T20:15:24.624318Z",
+      "breaking": false,
+      "assets": {
+        "adm0_lines.parquet": {
+          "sha256": "a3aee6c6fff86afc8edaddc0d55e1ddbce6b77c40fb21d89c343dc22ab94908a",
+          "size_bytes": 47994849,
+          "href": "cc0/humanitarian/adm0-lines/adm0_lines.parquet",
+          "mtime": 1793562127.761981
+        },
+        "adm0_lines.pmtiles": {
+          "sha256": "078958cef96cb485f5a51ae5836302f54dd2c9a6a3442c915786ca95401f4046",
+          "size_bytes": 41975467,
+          "href": "cc0/humanitarian/adm0-lines/adm0_lines.pmtiles",
+          "mtime": 1793562977.9988868
+        },
+        "adm0_lines.thumb.jpg": {
+          "sha256": "1f1305fee220c2a79522374ba713fe4ebb96b3814b056c690f7b4e28abaeb1ce",
+          "size_bytes": 9850,
+          "href": "cc0/humanitarian/adm0-lines/adm0_lines.thumb.jpg",
+          "mtime": 1791337046.8100843
+        },
+        "README.md": {
+          "sha256": "361b8b2d06390de6892347afb3275a4336334d08f6224550a471c9609f794517",
+          "size_bytes": 1267,
+          "href": "cc0/humanitarian/adm0-lines/README.md",
+          "mtime": 1793494158.8698726
+        }
+      },
+      "changes": [],
+      "schema": {
+        "type": "unknown",
+        "fingerprint": {
+          "columns": [],
+          "types": {}
+        }
+      },
+      "message": ""
+    },
+    {
+      "version": "1.8.1",
+      "created": "2026-11-03T13:34:38.041199Z",
+      "breaking": false,
+      "assets": {
+        "adm0_lines.parquet": {
+          "sha256": "5a858d0a6ddeda4f848a54e6346fde08f31628948a5459766facd3f0b293dc9b",
+          "size_bytes": 47998360,
+          "href": "cc0/humanitarian/adm0-lines/adm0_lines.parquet",
+          "source_mtime": 1793712075.2934961,
+          "mtime": 1793712075.2934961,
+          "feature_count": 402,
+          "schema_fingerprint": "effc5bf0fa0afe7b"
+        },
+        "adm0_lines.pmtiles": {
+          "sha256": "9c313548728a7076e256623e5ca67e4fc5e3c8214eaa8ebbb7106c77faf22e6f",
+          "size_bytes": 41977393,
+          "href": "cc0/humanitarian/adm0-lines/adm0_lines.pmtiles",
+          "mtime": 1793712875.98431
+        },
+        "adm0_lines.thumb.jpg": {
+          "sha256": "1f1305fee220c2a79522374ba713fe4ebb96b3814b056c690f7b4e28abaeb1ce",
+          "size_bytes": 9850,
+          "href": "cc0/humanitarian/adm0-lines/adm0_lines.thumb.jpg",
+          "mtime": 1791337046.8100843
+        },
+        "README.md": {
+          "sha256": "361b8b2d06390de6892347afb3275a4336334d08f6224550a471c9609f794517",
+          "size_bytes": 1267,
+          "href": "cc0/humanitarian/adm0-lines/README.md",
+          "mtime": 1793494158.8698726
+        }
+      },
+      "changes": [
+        "adm0_lines.parquet",
+        "adm0_lines.pmtiles"
+      ]
+    },
+    {
+      "version": "1.9.0",
+      "created": "2026-11-03T13:34:38.237429Z",
+      "breaking": false,
+      "assets": {
+        "adm0_lines.parquet": {
+          "sha256": "5a858d0a6ddeda4f848a54e6346fde08f31628948a5459766facd3f0b293dc9b",
+          "size_bytes": 47998360,
+          "href": "cc0/humanitarian/adm0-lines/adm0_lines.parquet",
+          "mtime": 1793712075.2934961
+        },
+        "adm0_lines.pmtiles": {
+          "sha256": "9c313548728a7076e256623e5ca67e4fc5e3c8214eaa8ebbb7106c77faf22e6f",
+          "size_bytes": 41977393,
+          "href": "cc0/humanitarian/adm0-lines/adm0_lines.pmtiles",
+          "mtime": 1793712875.98431
         },
         "adm0_lines.thumb.jpg": {
           "sha256": "1f1305fee220c2a79522374ba713fe4ebb96b3814b056c690f7b4e28abaeb1ce",
