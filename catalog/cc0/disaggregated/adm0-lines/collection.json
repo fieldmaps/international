@@ -95,34 +95,6 @@
     }
   ],
   "assets": {
-    "adm0_lines": {
-      "href": "./adm0_lines.pmtiles",
-      "type": "application/vnd.pmtiles",
-      "file:size": 40454931,
-      "file:checksum": "1220924afc06fab99c6e07e6695f1d450eab7d172dee61478c0e11743b7a7c1a8fbf",
-      "roles": [
-        "data"
-      ]
-    },
-    "adm0_lines.parquet": {
-      "href": "./adm0_lines.parquet",
-      "type": "application/vnd.apache.parquet",
-      "file:size": 48176603,
-      "file:checksum": "12208a5bd0e244aa3ae6ee71725abc374d52594b26c4ce477248bb1919b0804a31f2",
-      "roles": [
-        "data"
-      ]
-    },
-    "adm0_lines.parquet-tiles": {
-      "href": "./adm0_lines.pmtiles",
-      "type": "application/vnd.pmtiles",
-      "title": "adm0_lines.parquet (vector tiles)",
-      "file:size": 40454931,
-      "file:checksum": "1220924afc06fab99c6e07e6695f1d450eab7d172dee61478c0e11743b7a7c1a8fbf",
-      "roles": [
-        "visual"
-      ]
-    },
     "styles/default": {
       "href": "./styles/default.json",
       "type": "application/vnd.mapbox.style+json",
@@ -150,6 +122,24 @@
       "file:checksum": "12209d2ba6c0d195a44862c73611f58c1da3baea8ed12e88e86457a1f14a489da06d",
       "roles": [
         "documentation"
+      ]
+    },
+    "adm0_lines-tiles": {
+      "href": "./adm0_lines.pmtiles",
+      "type": "application/vnd.pmtiles",
+      "file:size": 42165409,
+      "file:checksum": "12206bb1dce6f6c95021ac8ab8583a712970060874962114fff2c6357bc1cb37ce08",
+      "roles": [
+        "data"
+      ]
+    },
+    "adm0_lines": {
+      "href": "./adm0_lines.parquet",
+      "type": "application/vnd.apache.parquet",
+      "file:size": 48185026,
+      "file:checksum": "122074bd5b9d7741dab16dc6447afa40e658ce68d2db6f390b92d87d3ae966f218a0",
+      "roles": [
+        "data"
       ]
     }
   }

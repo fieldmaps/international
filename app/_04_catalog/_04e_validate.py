@@ -4,6 +4,7 @@ from logging import getLogger
 
 from duckdb import DuckDBPyConnection
 
+from app.config import bounds_of
 from app.utils import has_invalid_coverage, raise_issues
 
 logger = getLogger(__name__)
@@ -29,17 +30,19 @@ def _check_geometry(conn: DuckDBPyConnection, table: str, issues: list[str]) -> 
 
 
 def _check_id(
-    conn: DuckDBPyConnection, table: str, id_col: str, issues: list[str]
+    conn: DuckDBPyConnection, table: str, id_col: str, issues: list[str], *extra: str
 ) -> None:
+    """Require ``id_col`` set and unique together with ``extra`` columns."""
+    cols = ", ".join(f'"{c}"' for c in (id_col, *extra))
     total, distinct, n_null = conn.execute(f"""--sql
-        SELECT COUNT(*), COUNT(DISTINCT "{id_col}"),
+        SELECT COUNT(*), COUNT(DISTINCT ({cols})) FILTER (WHERE "{id_col}" IS NOT NULL),
                COUNT(*) FILTER (WHERE "{id_col}" IS NULL)
         FROM "{table}"
     """).fetchall()[0]
     if n_null:
         issues.append(f"{table}: {n_null} null {id_col}")
     if distinct < total - n_null:
-        issues.append(f"{table}: {total - n_null - distinct} duplicate {id_col}")
+        issues.append(f"{table}: {total - n_null - distinct} duplicate ({cols})")
 
 
 def _check_attrs_joined(
@@ -66,7 +69,15 @@ def main(conn: DuckDBPyConnection, land: str, world: str) -> None:
     _check_geometry(conn, polygons, issues)
     _check_geometry(conn, points, issues)
 
-    _check_id(conn, lines, "adm_id", issues)
+    if bounds_of(land) == "lsib":
+        _check_id(conn, lines, "adm_id", issues, "iso3_1", "iso3_2")
+        n = conn.execute(
+            f'SELECT COUNT(*) FROM "{lines}" WHERE iso3_1 IS NULL'
+        ).fetchall()[0][0]
+        if n:
+            issues.append(f"{lines}: {n} null iso3_1")
+    else:
+        _check_id(conn, lines, "adm_id", issues)
     _check_id(conn, polygons, "adm0_id", issues)
     _check_id(conn, points, "adm0_id", issues)
 
