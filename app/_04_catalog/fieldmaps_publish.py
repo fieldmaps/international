@@ -1,7 +1,7 @@
 """Run portolan on a catalog and sync it to its remote with the AWS CLI.
 
-Vendored identically in fieldmaps/subnational, fieldmaps/international and
-OCHA-DAP/cod-site.
+Vendored identically in fieldmaps/subnational, fieldmaps/international,
+OCHA-DAP/cod-site and OCHA-DAP/adm0-site. Needs portolan-cli 0.9.0 or later.
 """
 
 import json
@@ -54,48 +54,8 @@ def add(
     strict: bool = True,
     command: Sequence[str] = ("portolan",),
 ) -> dict:
-    """Run `portolan add`, keeping each parquet's asset key beside its PMTiles."""
-    kwargs = {"strict": strict, "command": command}
-    envelope = run(catalog, "add", collection, *args, **kwargs)
-    target = catalog / collection
-    root = target if target.is_dir() else target.parent
-    seeded = [_seed_tile_keys(p.parent) for p in sorted(root.rglob("collection.json"))]
-    if any(seeded):
-        envelope = run(catalog, "add", collection, "--force", *args, **kwargs)
-    return envelope
-
-
-def _seed_tile_keys(collection: Path) -> bool:
-    """Key each <stem>.pmtiles as <stem>-tiles; True when collection.json changed."""
-    # portolan add can give <stem>.pmtiles the parquet's key, then reuses keys by href.
-    path = collection / "collection.json"
-    if not path.exists():
-        return False
-    data = json.loads(path.read_text())
-    assets = data.setdefault("assets", {})
-    changed = False
-    for parquet in sorted(collection.glob("*.parquet")):
-        stem, tiles = parquet.stem, f"./{parquet.stem}.pmtiles"
-        if not (collection / f"{stem}.pmtiles").exists():
-            continue
-        if assets.get(stem, {}).get("href") == f"./{parquet.name}" and any(
-            k == f"{stem}-tiles" and a.get("href") == tiles for k, a in assets.items()
-        ):
-            continue
-        hrefs = (tiles, f"./{parquet.name}")
-        tile_asset = next((a for a in assets.values() if a.get("href") == tiles), {})
-        for key in [k for k, a in assets.items() if a.get("href") in hrefs]:
-            del assets[key]
-        assets[f"{stem}-tiles"] = {**tile_asset, "href": tiles, "roles": ["visual"]}
-        assets[stem] = {
-            "href": f"./{parquet.name}",
-            "type": "application/vnd.apache.parquet",
-            "roles": ["data"],
-        }
-        changed = True
-    if changed:
-        path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
-    return changed
+    """Run `portolan add`, which keys <stem>.pmtiles as <stem>-tiles."""
+    return run(catalog, "add", collection, *args, strict=strict, command=command)
 
 
 def push(
