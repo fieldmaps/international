@@ -135,8 +135,8 @@
     "adm0_lines-tiles": {
       "href": "./adm0_lines.pmtiles",
       "type": "application/vnd.pmtiles",
-      "file:size": 35449809,
-      "file:checksum": "12200a83abf5141a68618d7de0c85b71eab0377281574e061ac3dc94f1fa3af015ca",
+      "file:size": 35449796,
+      "file:checksum": "1220196db911cd709e84d31765faf70e7a3a022393f85d1d1604fe9438b1d43786b0",
       "roles": [
         "data"
       ]
@@ -145,7 +145,7 @@
       "href": "./adm0_lines.parquet",
       "type": "application/vnd.apache.parquet",
       "file:size": 37797539,
-      "file:checksum": "1220214e28715341c78318ac0d63bff596d317ccbc23587b0d078f975c228efc4fff",
+      "file:checksum": "1220a5fc0814ebf15637f1fa11da7e1d83f9dd836543d16665cd9436a21baeae25a7",
       "roles": [
         "data"
       ]
