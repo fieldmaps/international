@@ -22,6 +22,13 @@ ILEMI_PROV = "((cc1='KE' AND cc2='KE') OR (cc1='SS' AND cc2='SS')) AND rank='2'"
 OTHER_LINE = "Other Line of International Separation"
 OTHER_CC = {"KE": "SS", "SS": "KE"}
 ILEMI_FACES = 3
+SCOPUS_RING = "cc1='IL' AND cc2='XW' AND rank='2'"
+SCOPUS_DMZ = "label='1949 Armistice Line DMZ'"
+SCOPUS_INNER = [
+    "cc1='IL' AND cc2='Q4' AND rank='2'",
+    "cc1='XW' AND cc2='Q4' AND rank='3' AND label='1949 Armistice Line'",
+]
+SCOPUS_LABEL = "1949 Armistice Line Mount Scopus"
 
 
 def _lsib(conn: DuckDBPyConnection, where: str, n: int) -> list[tuple]:
@@ -147,10 +154,62 @@ def _split_ilemi(conn: DuckDBPyConnection) -> None:
     _replace(conn, f"({ILEMI_ADMIN}) OR ({ILEMI_PROV})", groups)
 
 
+def _cut(conn: DuckDBPyConnection, line: bytes, face: bytes, fn: str) -> list:
+    """Return the linestrings of ``fn(line, face)`` as WKB."""
+    return [
+        r[0]
+        for r in conn.execute(
+            f"""--sql
+            SELECT ST_AsWKB(UNNEST(ST_Dump(ST_CollectionExtract(
+                {fn}(ST_GeomFromWKB($1), ST_GeomFromWKB($2)), 2))).geom)
+            """,
+            [line, face],
+        ).fetchall()
+    ]
+
+
+def _split_mount_scopus(conn: DuckDBPyConnection) -> None:
+    """Relabel the LSIB lines on and inside the Mount Scopus enclave."""
+    point = conn.execute(f"""--sql
+        SELECT ST_AsWKB(geom) FROM read_parquet('{input_dir / "adm0_points.parquet"}')
+        WHERE id = 'ISR_2'
+    """).fetchall()[0][0]
+    (ring_line,) = _lsib(conn, SCOPUS_RING, 1)
+    rings = conn.execute(
+        """--sql
+        SELECT ST_AsWKB(g) FROM (
+            SELECT UNNEST(ST_Dump(ST_GeomFromWKB($1))).geom AS g
+        ) WHERE ST_Contains(ST_Envelope(g), ST_GeomFromWKB($2))
+        """,
+        [ring_line[-1], point],
+    ).fetchall()
+    if len(rings) != 1:
+        msg = f"expected one Mount Scopus ring, found {len(rings)}"
+        raise ValueError(msg)
+    dmz = [r[-1] for r in _lsib(conn, SCOPUS_DMZ, 2)]
+    _, faces = _faces(conn, [rings[0][0], *dmz])
+    if len(faces) != 1:
+        msg = f"expected one Mount Scopus face, found {len(faces)}"
+        raise ValueError(msg)
+    face = conn.execute(
+        "SELECT ST_AsWKB(ST_MakePolygon(ST_GeomFromWKB($1)))", [faces[0]]
+    ).fetchall()[0][0]
+    lines = [ring_line] + [_lsib(conn, w, 1)[0] for w in SCOPUS_INNER]
+    groups = {}
+    for line in lines:
+        cc1, country1, cc2, country2, rank, _, status = line[:-1]
+        key = (cc1, country1, cc2, country2, rank, SCOPUS_LABEL, status)
+        groups[key] = _cut(conn, line[-1], face, "ST_Intersection")
+        groups[line[:-1]] = _cut(conn, line[-1], face, "ST_Difference")
+    where = " OR ".join(f"({w})" for w in [SCOPUS_RING, *SCOPUS_INNER])
+    _replace(conn, where, groups)
+
+
 def _fix_lsib(conn: DuckDBPyConnection) -> None:
-    """Split LSIB lines around South Sudan into their disputed-area pieces."""
+    """Split LSIB lines around South Sudan and Mount Scopus into their pieces."""
     _split_kafia_kingi(conn)
     _split_ilemi(conn)
+    _split_mount_scopus(conn)
 
 
 def _fix_land(conn: DuckDBPyConnection, land: str) -> None:

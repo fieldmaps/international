@@ -20,7 +20,7 @@ Batch ETL pipeline that generates Administrative Level 0 (country-level) boundar
 
 **`_02_prepare.main(land)`** (`app/_02_prepare/`):
 
-1. `_02a_preprocessing.main(conn, land)`: loads LSIB, splits its South Sudan lines into the Kafia Kingi pieces (at the Sudan claim line in `inputs/adm0_lines.parquet`) and the Ilemi Triangle 1/2/3 pieces (faces of the Administrative and Provisional lines, west to east), then `ST_Read`s the requested land source
+1. `_02a_preprocessing.main(conn, land)`: loads LSIB, splits its South Sudan lines into the Kafia Kingi pieces (at the Sudan claim line in `inputs/adm0_lines.parquet`) and the Ilemi Triangle 1/2/3 pieces (faces of the Administrative and Provisional lines, west to east), relabels the 1949 Armistice Line pieces on and inside the Mount Scopus enclave (the ring around the `ISR_2` point plus the two DMZ lines) as `1949 Armistice Line Mount Scopus`, then `ST_Read`s the requested land source
 2. `_02b_attributes.main(conn, land)` — loads CSV attribute tables for the requested land
 
 Source publication dates are read from the `.date` files written during download via `app.utils.get_source_date(source)` (no DuckDB table). `wld_date` is the LSIB date; `wld_update` is the land source's date.
