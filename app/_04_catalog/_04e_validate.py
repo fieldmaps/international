@@ -4,7 +4,7 @@ from logging import getLogger
 
 from duckdb import DuckDBPyConnection
 
-from app.utils import has_invalid_coverage, raise_issues
+from app.utils import edge_vertex_issues, has_invalid_coverage, raise_issues
 
 logger = getLogger(__name__)
 
@@ -67,6 +67,9 @@ def main(conn: DuckDBPyConnection, land: str, world: str) -> None:
     _check_geometry(conn, lines, issues)
     _check_geometry(conn, polygons, issues)
     _check_geometry(conn, points, issues)
+
+    for table in (lines, polygons, points):
+        issues.extend(edge_vertex_issues(conn, f'"{table}"', table))
 
     _check_id(conn, lines, "adm_id", issues, "iso3_1", "iso3_2")
     sql = f'SELECT COUNT(*) FROM "{lines}" WHERE iso3_1 IS NULL'

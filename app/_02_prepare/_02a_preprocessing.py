@@ -9,7 +9,7 @@ from pathlib import Path
 from duckdb import DuckDBPyConnection
 
 from app.config import download_dir, input_dir
-from app.utils import get_source_date
+from app.utils import get_source_date, raise_issues
 
 logger = getLogger(__name__)
 
@@ -21,6 +21,7 @@ ILEMI_ADMIN = "cc1='KE' AND cc2='SS' AND rank='2'"
 ILEMI_PROV = "((cc1='KE' AND cc2='KE') OR (cc1='SS' AND cc2='SS')) AND rank='2'"
 OTHER_LINE = "Other Line of International Separation"
 OTHER_CC = {"KE": "SS", "SS": "KE"}
+EDGE_TOL = 1e-9
 ILEMI_FACES = 3
 SCOPUS_RING = "cc1='IL' AND cc2='XW' AND rank='2'"
 SCOPUS_DMZ = "label='1949 Armistice Line DMZ'"
@@ -212,9 +213,97 @@ def _fix_lsib(conn: DuckDBPyConnection) -> None:
     _split_mount_scopus(conn)
 
 
+def _snap_to_extent(conn: DuckDBPyConnection, land: str) -> None:
+    """Snap coordinates within ``EDGE_TOL`` of ±180/±90 to the exact value."""
+    table = f"{land}_land_00"
+    # Aggregate FILTER: DuckDB 2.0.0 drops rows on some scan WHERE filters.
+    fids, crs = conn.execute(f"""--sql
+        SELECT list(FID) FILTER (
+            WHERE ST_XMin(geom) < -180 + {EDGE_TOL} OR ST_XMax(geom) > 180 - {EDGE_TOL}
+                OR ST_YMin(geom) < -90 + {EDGE_TOL} OR ST_YMax(geom) > 90 - {EDGE_TOL}
+        ), any_value(ST_CRS(geom))
+        FROM "{table}"
+    """).fetchall()[0]
+    conn.execute(f"""--sql
+        CREATE OR REPLACE TEMP MACRO snap(v, e) AS CASE
+            WHEN abs(v - e) < {EDGE_TOL} THEN e
+            WHEN abs(v + e) < {EDGE_TOL} THEN -e
+            ELSE v
+        END
+    """)
+    for fid in fids or []:
+        noisy = conn.execute(
+            f"""--sql
+            SELECT count(*) FILTER (
+                WHERE snap(ST_X(p), 180) <> ST_X(p) OR snap(ST_Y(p), 90) <> ST_Y(p)
+            )
+            FROM (
+                SELECT UNNEST(ST_Dump(ST_Points(geom))).geom AS p
+                FROM "{table}" WHERE FID = $1
+            )
+            """,
+            [fid],
+        ).fetchall()[0][0]
+        if not noisy:
+            continue
+        conn.execute(
+            f"""--sql
+            UPDATE "{table}" SET geom = (
+                WITH parts AS (
+                    SELECT UNNEST(ST_Dump(geom)) AS d, ST_GeometryType(geom) AS gt
+                    FROM "{table}" WHERE FID = $1
+                ),
+                rings AS (
+                    SELECT d.path AS p, 0 AS rn, ST_ExteriorRing(d.geom) AS ring, gt
+                    FROM parts
+                    UNION ALL
+                    SELECT d.path, n, ST_InteriorRingN(d.geom, n), gt
+                    FROM parts, range(1, ST_NumInteriorRings(d.geom) + 1) AS t(n)
+                ),
+                pts AS (
+                    SELECT p, rn, i, gt, ST_PointN(ring, i::INT) AS pt
+                    FROM rings, range(1, ST_NPoints(ring) + 1) AS t(i)
+                ),
+                lines AS (
+                    SELECT p, rn, gt, ST_MakeLine(list(
+                        ST_Point(snap(ST_X(pt), 180), snap(ST_Y(pt), 90)) ORDER BY i
+                    )) AS l
+                    FROM pts GROUP BY p, rn, gt
+                ),
+                polys AS (
+                    SELECT p, gt, ST_MakePolygon(
+                        any_value(l) FILTER (WHERE rn = 0),
+                        coalesce(list(l ORDER BY rn) FILTER (WHERE rn > 0), [])
+                    ) AS g
+                    FROM lines GROUP BY p, gt
+                )
+                SELECT ST_SetCRS(CASE
+                    WHEN any_value(gt) = 'POLYGON' THEN any_value(g)
+                    ELSE ST_Collect(list(g ORDER BY p))
+                END, '{crs}')
+                FROM polys
+            )
+            WHERE FID = $1
+            """,
+            [fid],
+        )
+    outside = conn.execute(f"""--sql
+        SELECT list(FID) FILTER (
+            WHERE ST_XMin(geom) < -180 OR ST_XMax(geom) > 180
+                OR ST_YMin(geom) < -90 OR ST_YMax(geom) > 90
+        )
+        FROM "{table}"
+    """).fetchall()[0][0]
+    raise_issues(
+        [f"FID {fid} extends past ±180/±90" for fid in outside or []],
+        f"{table}_extent",
+    )
+
+
 def _fix_land(conn: DuckDBPyConnection, land: str) -> None:
-    """Add wld_update column to land table."""
+    """Snap land to the ±180/±90 extent and add wld_update column."""
     land_date = get_source_date(land)
+    _snap_to_extent(conn, land)
     conn.execute(f"""--sql
         ALTER TABLE "{land}_land_00"
         ADD COLUMN IF NOT EXISTS wld_update DATE DEFAULT '{land_date}'

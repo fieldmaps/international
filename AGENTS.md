@@ -20,16 +20,16 @@ Batch ETL pipeline that generates Administrative Level 0 (country-level) boundar
 
 **`_02_prepare.main(land)`** (`app/_02_prepare/`):
 
-1. `_02a_preprocessing.main(conn, land)`: loads LSIB, splits its South Sudan lines into the Kafia Kingi pieces (at the Sudan claim line in `inputs/adm0_lines.parquet`) and the Ilemi Triangle 1/2/3 pieces (faces of the Administrative and Provisional lines, west to east), relabels the 1949 Armistice Line pieces on and inside the Mount Scopus enclave (the ring around the `ISR_2` point plus the two DMZ lines) as `1949 Armistice Line Mount Scopus`, then `ST_Read`s the requested land source
+1. `_02a_preprocessing.main(conn, land)`: loads LSIB, splits its South Sudan lines into the Kafia Kingi pieces (at the Sudan claim line in `inputs/adm0_lines.parquet`) and the Ilemi Triangle 1/2/3 pieces (faces of the Administrative and Provisional lines, west to east), relabels the 1949 Armistice Line pieces on and inside the Mount Scopus enclave (the ring around the `ISR_2` point plus the two DMZ lines) as `1949 Armistice Line Mount Scopus`, then `ST_Read`s the requested land source, snapping land coordinates within 1e-9 of ±180°/±90° to the exact value (fails if any extends past it)
 2. `_02b_attributes.main(conn, land)` — loads CSV attribute tables for the requested land
 
 Source publication dates are read from the `.date` files written during download via `app.utils.get_source_date(source)` (no DuckDB table). `wld_date` is the LSIB date; `wld_update` is the land source's date.
 
 **`_03_build.main(land)`** (`app/_03_build/`):
 
-1. `_03a_inputs.main(conn, land)` — copies `lsib_00`/`{land}_*` from `{land}__02_prepare.duckdb`; loads adm0 lines/points GeoPackages; appends LSIB to lines
+1. `_03a_inputs.main(conn, land)` — copies `lsib_00`/`{land}_*` from `{land}__02_prepare.duckdb`; loads `inputs/adm0_{lines,points}.parquet`; appends LSIB to lines; fails if an input line vertex sits within 1e-6 of ±180°/±90° but not on it (`utils.edge_vertex_issues`, shared with `_04e` and `_05a`)
 2. `_03b_polygonize.main(conn, land)` — unions lines → `ST_Polygonize` → joins polygons to points
-3. `_03c_continents.main(conn, land)` — identifies land masses crossed by boundary lines
+3. `_03c_continents.main(conn, land)` — identifies land masses crossed by boundary lines; fails if a null-attribute line crosses into one
 4. `_03d_intersection.main(conn, land)` — clips voronoi polygons to land (per-row to cap GEOS memory)
 
 **`_04_catalog.main(land)`** (`app/_04_catalog/`):
@@ -37,13 +37,13 @@ Source publication dates are read from the `.date` files written during download
 1. For each `world` in `["intl", "all"]`:
    - `_04a_lines.main`, `_04b_polygons.main`, `_04c_points.main`: final output tables; points skip ids with `label_{world} = 0` (the polygon keeps its name, no map label); lines with `adm_id_{world}` set in `adm0_lines.csv` take that row's attributes and merge into it; lines carry `iso3_1`/`iso3_2`, the `iso_3` of the world-view unit on each side (alphabetical; `iso3_2` empty when both sides are one unit), from `_04a_lines.sides`, which splits each `lines_00` row by the `voronoi_00` faces it borders, so a line is unique on (`adm_id`, `iso3_1`, `iso3_2`); `iso3_1_{world}`/`iso3_2_{world}` in the CSV override them and merge the overridden pieces into one line
    - `_04d_parquet.main`: writes Hilbert-sorted GeoParquet 2.0 (no bbox column) via geoparquet-io to `catalog/{cc0,odbl}/{humanitarian,disaggregated}/adm0-{polygons,lines,points}/` (land `usgs` → `cc0`, `osm` → `odbl`; world `intl` → `humanitarian`, `all` → `disaggregated`); polygons get one row per row group; voronoi (intl only) goes to `outputs/`
-   - `_04e_validate.main`: checks final lines/polygons/points tables (geometry validity, lon/lat bounds, ID uniqueness, attribute-join completeness, polygon topology, points-to-polygons row parity excluding `label_{world} = 0` parts) before world-scoped tables are dropped; `ST_CoverageInvalidEdges` at gap width 0 is the coverage check, since a width of 1e-5° also flags open-sea notches where a border splits a sharp coastline angle, which are expected
+   - `_04e_validate.main`: checks final lines/polygons/points tables (geometry validity, lon/lat bounds, no vertex within 1e-6 of ±180°/±90° but off it, ID uniqueness, attribute-join completeness, polygon topology, points-to-polygons row parity excluding `label_{world} = 0` parts) before world-scoped tables are dropped; `ST_CoverageInvalidEdges` at gap width 0 is the coverage check, since a width of 1e-5° also flags open-sea notches where a border splits a sharp coastline angle, which are expected
    - `_04f_cleanup.main`: drops per-world tables to free memory before the next world iteration
 2. `_04g_portolan.main`: builds a PMTiles file beside each catalog parquet with tylertoo, then `portolan add <collection>`, which registers the PMTiles, default style, and thumbnail
 
 **`_04_catalog.finalize()`** runs `portolan check --data-scope local` once after all lands, then `fieldmaps_publish.push` when `--push` is set.
 
-**`_05_export.main(land)`** (`app/_05_export/`): `_05a_outputs.main` copies each catalog parquet to `outputs/adm0/{land}/{world}/` and derives GPKG + GDB (EPSG:4326) + XLSX from it, verifying row counts. **`_05_export.finalize()`** calls `_05b_meta.main()` to write the metadata JSON/CSV/XLSX catalog.
+**`_05_export.main(land)`** (`app/_05_export/`): `_05a_outputs.main` copies each catalog parquet to `outputs/adm0/{land}/{world}/` and derives GPKG + GDB (EPSG:4326) + XLSX from it, verifying row counts and, for the parquet, GPKG and GDB, that no vertex sits within 1e-6 of ±180°/±90° but off it. **`_05_export.finalize()`** calls `_05b_meta.main()` to write the metadata JSON/CSV/XLSX catalog.
 
 ## Key patterns
 
