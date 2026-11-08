@@ -6,7 +6,7 @@ from logging import getLogger
 
 import pandas as pd
 
-from app.config import DATA_URL, land_of, lands, output_dir, tmp_dir, views_of
+from app.config import DATA_URL, lands, output_dir, tmp_dir, world_views
 from app.utils import get_source_date
 
 logger = getLogger(__name__)
@@ -24,15 +24,14 @@ def main() -> None:
     output_dir.mkdir(exist_ok=True, parents=True)
     _save_date()
     rows = []
-    for key in lands:
-        land = land_of(key)
-        for wld in views_of(key):
+    for land in lands:
+        for wld in world_views:
             row = {
                 "id": f"{land}_{wld}_adm0",
                 "grp": land,
                 "wld": wld,
                 "adm": 0,
-                "date": get_source_date(key),
+                "date": get_source_date(land),
                 "a_parquet": f"{DATA_URL}/{land}/{wld}/adm0_polygons.parquet",
                 "a_gpkg": f"{DATA_URL}/{land}/{wld}/adm0_polygons.gpkg.zip",
                 "a_gdb": f"{DATA_URL}/{land}/{wld}/adm0_polygons.gdb.zip",

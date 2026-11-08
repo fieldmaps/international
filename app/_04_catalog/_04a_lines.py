@@ -4,7 +4,7 @@ from logging import getLogger
 
 from duckdb import DuckDBPyConnection
 
-from app.config import GEOM_PRECISION, bounds_of, world_views
+from app.config import GEOM_PRECISION, world_views
 
 logger = getLogger(__name__)
 
@@ -224,23 +224,6 @@ def _dissolve_sql(keys: list[str], tmp: str) -> str:
     """
 
 
-def _gaul(conn: DuckDBPyConnection, land: str, world: str) -> None:
-    """Clip GAUL lines to land, dropping world-frame closure segments."""
-    attrs = f"{land}_attributes_lines"
-    out = f"{land}_lines_02_{world}"
-    tmp = f"{land}_lines_clipped"
-    _clip(conn, land, ["adm_id"], tmp)
-    conn.execute(f"""--sql
-        CREATE OR REPLACE TABLE "{out}" AS
-        WITH clipped AS ({_dissolve_sql(["adm_id"], tmp)})
-        SELECT b.*, '{world}' AS wld_view, a.geom
-        FROM clipped AS a
-        JOIN "{attrs}" AS b ON a.adm_id = b.adm_id
-        WHERE b.kind != 'frame'
-    """)
-    conn.execute(f'DROP TABLE IF EXISTS "{tmp}"')
-
-
 def _merge(conn: DuckDBPyConnection, land: str, world: str) -> None:
     """Give lines with ``adm_id_{world}`` set that row's attributes, merged into it."""
     attrs = f"{land}_attributes_lines"
@@ -277,10 +260,6 @@ def _merge(conn: DuckDBPyConnection, land: str, world: str) -> None:
 
 def main(conn: DuckDBPyConnection, land: str, world: str) -> None:
     """Clip boundary lines to land and filter by world view."""
-    if bounds_of(land) == "gaul":
-        _gaul(conn, land, world)
-        logger.info("%s_%s", land, world)
-        return
     attrs = f"{land}_attributes_lines"
     out = f"{land}_lines_02_{world}"
     tmp = f"{land}_lines_clipped"

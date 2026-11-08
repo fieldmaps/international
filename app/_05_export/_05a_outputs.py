@@ -7,8 +7,8 @@ from shutil import copy2, rmtree
 from duckdb import DuckDBPyConnection
 
 from app._04_catalog._04d_parquet import catalog_parquet
-from app.config import EXPORT_LAYERS, land_of, output_dir, tmp_dir
-from app.utils import raise_issues, zip_path
+from app.config import EXPORT_LAYERS, output_dir, tmp_dir
+from app.utils import edge_vertex_issues, raise_issues, zip_path
 
 logger = getLogger(__name__)
 
@@ -88,11 +88,11 @@ def _output_layer(
     conn: DuckDBPyConnection, land: str, wld: str, spec: tuple[str, str, str]
 ) -> list[str]:
     geom, geom_type, _ = spec
-    if geom == "voronoi" and wld not in ("intl", "gaul"):
+    if geom == "voronoi" and wld != "intl":
         return []
     data_dir = tmp_dir / f"{land}/{wld}"
     data_dir.mkdir(exist_ok=True, parents=True)
-    out_dir = output_dir / f"adm0/{land_of(land)}/{wld}"
+    out_dir = output_dir / f"adm0/{land}/{wld}"
     out_dir.mkdir(exist_ok=True, parents=True)
     file_name = f"adm0_{geom}"
     gpkg = data_dir / f"{file_name}.gpkg"
@@ -104,6 +104,7 @@ def _output_layer(
     id_col = "adm_id" if geom == "lines" else "adm0_id"
 
     issues = [_output_gpkg(conn, src, id_col, gpkg)]
+    issues.extend(edge_vertex_issues(conn, f"ST_Read('{gpkg}')", gpkg.name))
 
     if geom == "voronoi":
         file_zip = out_dir / f"{gpkg.name}.zip"
@@ -112,6 +113,8 @@ def _output_layer(
         return [i for i in issues if i]
 
     issues.append(_output_gdb(conn, src, id_col, geom_type, gdb))
+    issues.extend(edge_vertex_issues(conn, f"ST_Read('{gdb}')", gdb.name, "SHAPE"))
+    issues.extend(edge_vertex_issues(conn, src, parquet.name, "geometry"))
     issues.append(_output_xlsx(conn, src, id_col, out_dir / f"{file_name}.xlsx"))
     for f in [gpkg, gdb]:
         file_zip = out_dir / f"{f.name}.zip"

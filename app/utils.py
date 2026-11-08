@@ -19,8 +19,6 @@ from .config import (
     PARQUET_OPTS,
     debug,
     download_dir,
-    gaul_input_dir,
-    land_of,
     tmp_dir,
 )
 
@@ -262,6 +260,24 @@ def has_invalid_coverage(conn: DuckDBPyConnection, table: str) -> bool:
     )
 
 
+def edge_vertex_issues(
+    conn: DuckDBPyConnection, src: str, label: str, geom: str = "geom"
+) -> list[str]:
+    """Return an issue if a vertex in ``src`` is within 1e-6 of ±180/±90 but off it."""
+    near = "abs(abs({v}) - {e}) BETWEEN 1e-300 AND 1e-6"
+    off = f"{near.format(v='ST_X(p)', e=180)} OR {near.format(v='ST_Y(p)', e=90)}"
+    # Aggregate FILTER: DuckDB 2.0.0 drops rows on some scan WHERE filters.
+    n, sample = conn.execute(f"""--sql
+        SELECT count(*) FILTER (WHERE {off}),
+            list(ST_AsText(p)) FILTER (WHERE {off})[1:3]
+        FROM (
+            SELECT UNNEST(ST_Dump(ST_Points(ST_GeomFromWKB(ST_AsWKB(g))))).geom AS p
+            FROM (SELECT {geom} AS g FROM {src})
+        )
+    """).fetchall()[0]
+    return [f"{label}: {n} vertices off the world edge, e.g. {sample}"] if n else []
+
+
 def raise_issues(issues: list[str], context: str) -> None:
     """Log and raise a single RuntimeError if any issues were collected."""
     if not issues:
@@ -312,10 +328,8 @@ def export_debug_tables(
 
 
 def get_source_date(source: str) -> str:
-    """Return the publication date of a land key, ``lsib`` or ``gaul`` as ISO string."""
-    if source == "gaul":
-        return (gaul_input_dir / ".date").read_text().strip()
-    return (download_dir / f"{land_of(source)}/.date").read_text().strip()
+    """Return the publication date of a land source or ``lsib`` as ISO string."""
+    return (download_dir / f"{source}/.date").read_text().strip()
 
 
 def zip_path(file: Path, file_zip: Path) -> None:
