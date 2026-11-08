@@ -167,7 +167,6 @@ Flags:
 - `--debug` / `DEBUG=1` — wraps DuckDB connection (logs wall-clock, peak RSS, duckdb-memory delta per query, coalescing consecutive same-label executes into `query xN ...` summaries); `discard()` becomes a no-op (intermediate tables persist); after each `step.main(land)`, tables are dumped under `tmp/debug/`. Layout mirrors the land-outer loop, with only the land and step as folders: per-land tables go to `tmp/debug/{land}/{step}/{table}.parquet` (with the `{land}_` prefix stripped from the filename); shared tables go to `tmp/debug/{step}/{table}.parquet`. Examples: `osm_attributes_lines` → `tmp/debug/osm/_02_prepare/attributes_lines.parquet`; `osm_polygons_01_a_intl` → `tmp/debug/osm/_04_catalog/polygons_01_a_intl.parquet`; `lsib_00` → `tmp/debug/_02_prepare/lsib_00.parquet`; `dates` → `tmp/debug/_02_prepare/dates.parquet`. Implied by `--step` and `--land` (any partial run is treated as iteration).
 - `--step {_01_download,_02_prepare,_03_build,_04_catalog,_05_export}` / `STEP=...` — run only the named step; default runs all five. Implies `--debug`.
 - `--land {osm,usgs}` / `LAND=...` — process only one land source (default: both). Use for fast iteration; verify with both before merging. Implies `--debug`.
-- `--bounds {lsib,gaul}` / `BOUNDS=...`: boundary source (default: `lsib`). `gaul` builds the experimental GAUL variant into `catalog/{cc-by,odbl}/gaul/`, which is local-only and never published. Implies `--debug`.
 - `--push` / `PUSH=1`: push the catalog to Source Cooperative after `_04_catalog.finalize()` validates it (see Publishing).
 
 ### Sub-step iteration with `iter.py`
@@ -195,10 +194,10 @@ Check the keys (expect `assumed-role/_default/...`):
 env -i HOME=$HOME PATH=$PATH bash -c 'set -a; source .env; set +a; aws sts get-caller-identity --endpoint-url https://data.source.coop/.sts'
 ```
 
-Push with `--push` / `PUSH=1`: after `portolan check`, `_04_catalog.finalize()` runs `aws s3 sync` of `catalog/` to `PORTOLAN_REMOTE` with `AWS_CONFIG_FILE=aws.config` (per-part retries, classic transfer client), first everything except `versions.json`, then the `versions.json` files, skipping hidden paths and `*/gaul/*`. A failed upload makes `aws s3 sync` exit non-zero and the push raises. Needs the AWS CLI on PATH. To push an already-built catalog without rerunning `_04_catalog`:
+Push with `--push` / `PUSH=1`: after `portolan check`, `_04_catalog.finalize()` runs `aws s3 sync` of `catalog/` to `PORTOLAN_REMOTE` with `AWS_CONFIG_FILE=aws.config` (per-part retries, classic transfer client), first everything except `versions.json`, then the `versions.json` files, skipping hidden paths. A failed upload makes `aws s3 sync` exit non-zero and the push raises. Needs the AWS CLI on PATH. To push an already-built catalog without rerunning `_04_catalog`:
 
 ```bash
-uv run python -c 'from app.config import catalog_dir; from app._04_catalog import fieldmaps_publish as p; p.push(catalog_dir, exclude=("*/gaul/*",))'
+uv run python -c 'from app.config import catalog_dir; from app._04_catalog import fieldmaps_publish as p; p.push(catalog_dir)'
 ```
 
 `app/_04_catalog/fieldmaps_publish.py` is kept byte-identical with `fieldmaps/subnational` and `OCHA-DAP/cod-site`; change it in all three repos.

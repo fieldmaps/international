@@ -5,7 +5,7 @@ from logging import getLogger
 import tylertoo
 from duckdb import DuckDBPyConnection
 
-from app.config import args, catalog_dir, geoms, tmp_dir, views_of
+from app.config import args, catalog_dir, geoms, tmp_dir, world_views
 
 from . import fieldmaps_publish
 from ._04d_parquet import catalog_parquet
@@ -15,7 +15,7 @@ logger = getLogger(__name__)
 
 def main(conn: DuckDBPyConnection, land: str) -> None:
     """Write PMTiles beside each catalog parquet, then `portolan add` its collection."""
-    for wld in views_of(land):
+    for wld in world_views:
         for geom in geoms:
             parquet = catalog_parquet(land, wld, geom)
             overview = tmp_dir / f"{land}/{wld}/adm0_{geom}_overview.parquet"
@@ -55,4 +55,4 @@ def finalize() -> None:
     fieldmaps_publish.run(catalog_dir, "check", "--data-scope", "local")
     logger.info("check")
     if args.push:
-        fieldmaps_publish.push(catalog_dir, exclude=("*/gaul/*",))
+        fieldmaps_publish.push(catalog_dir)

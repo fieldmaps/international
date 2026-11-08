@@ -8,7 +8,7 @@ from pathlib import Path
 
 from duckdb import DuckDBPyConnection
 
-from app.config import bounds_of, download_dir, input_dir, land_of
+from app.config import download_dir, input_dir
 from app.utils import get_source_date
 
 logger = getLogger(__name__)
@@ -265,10 +265,9 @@ def _load_usgs(conn: DuckDBPyConnection, table: str) -> None:
 
 
 def main(conn: DuckDBPyConnection, land: str) -> None:
-    """Load LSIB (unless GAUL bounds) plus the given land source into DuckDB."""
-    if bounds_of(land) == "lsib":
-        _load_lsib(conn)
-    loader = {"osm": _load_osm, "usgs": _load_usgs}[land_of(land)]
+    """Load LSIB plus the given land source into DuckDB."""
+    _load_lsib(conn)
+    loader = {"osm": _load_osm, "usgs": _load_usgs}[land]
     loader(conn, f"{land}_land_00")
     _fix_land(conn, land)
     logger.info("preprocessing %s", land)

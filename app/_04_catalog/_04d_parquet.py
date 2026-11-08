@@ -11,7 +11,6 @@ from app.config import (
     EXPORT_LAYERS,
     PARQUET_OPTS,
     catalog_dir,
-    land_of,
     output_dir,
     tmp_dir,
 )
@@ -45,10 +44,8 @@ def main(conn: DuckDBPyConnection, land: str, wld: str) -> None:
         table = f"{land}_{layer}_{wld}"
         has_id = geom != "lines"
         if geom == "voronoi":
-            if wld in ("intl", "gaul"):
-                voronoi = (
-                    output_dir / f"adm0/{land_of(land)}/{wld}/adm0_voronoi.parquet"
-                )
+            if wld == "intl":
+                voronoi = output_dir / f"adm0/{land}/{wld}/adm0_voronoi.parquet"
                 _copy_parquet(conn, table, voronoi, has_id=has_id)
             continue
         staged = tmp_dir / f"{land}/{wld}/adm0_{geom}.parquet"

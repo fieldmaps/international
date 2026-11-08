@@ -4,7 +4,6 @@ from logging import getLogger
 
 from duckdb import DuckDBPyConnection
 
-from app.config import bounds_of
 from app.utils import has_invalid_coverage, raise_issues
 
 logger = getLogger(__name__)
@@ -69,15 +68,11 @@ def main(conn: DuckDBPyConnection, land: str, world: str) -> None:
     _check_geometry(conn, polygons, issues)
     _check_geometry(conn, points, issues)
 
-    if bounds_of(land) == "lsib":
-        _check_id(conn, lines, "adm_id", issues, "iso3_1", "iso3_2")
-        n = conn.execute(
-            f'SELECT COUNT(*) FROM "{lines}" WHERE iso3_1 IS NULL'
-        ).fetchall()[0][0]
-        if n:
-            issues.append(f"{lines}: {n} null iso3_1")
-    else:
-        _check_id(conn, lines, "adm_id", issues)
+    _check_id(conn, lines, "adm_id", issues, "iso3_1", "iso3_2")
+    sql = f'SELECT COUNT(*) FROM "{lines}" WHERE iso3_1 IS NULL'
+    n = conn.execute(sql).fetchall()[0][0]
+    if n:
+        issues.append(f"{lines}: {n} null iso3_1")
     _check_id(conn, polygons, "adm0_id", issues)
     _check_id(conn, points, "adm0_id", issues)
 

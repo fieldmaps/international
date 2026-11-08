@@ -19,8 +19,6 @@ from .config import (
     PARQUET_OPTS,
     debug,
     download_dir,
-    gaul_input_dir,
-    land_of,
     tmp_dir,
 )
 
@@ -312,10 +310,8 @@ def export_debug_tables(
 
 
 def get_source_date(source: str) -> str:
-    """Return the publication date of a land key, ``lsib`` or ``gaul`` as ISO string."""
-    if source == "gaul":
-        return (gaul_input_dir / ".date").read_text().strip()
-    return (download_dir / f"{land_of(source)}/.date").read_text().strip()
+    """Return the publication date of a land source or ``lsib`` as ISO string."""
+    return (download_dir / f"{source}/.date").read_text().strip()
 
 
 def zip_path(file: Path, file_zip: Path) -> None:

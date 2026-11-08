@@ -37,19 +37,11 @@ parser.add_argument(
     choices=["osm", "usgs"],
     help="Process only one land source (default: both). Speeds up iteration.",
 )
-parser.add_argument(
-    "--bounds",
-    default=getenv("BOUNDS"),
-    choices=["lsib", "gaul"],
-    help="Boundary source (default: lsib; gaul is a local-only experiment).",
-)
 parser.add_argument("--push", **_bool_flag("PUSH"))
 args = parser.parse_args()
 
 step = args.step
-debug = (
-    args.debug or step is not None or args.land is not None or args.bounds is not None
-)
+debug = args.debug or step is not None or args.land is not None
 
 # --- XML namespaces for LSIB metadata parsing ---
 LSIB_NS = {
@@ -72,28 +64,9 @@ GEOM_PRECISION = 0.000000001
 os.environ["OGR_ORGANIZE_POLYGONS"] = "ONLY_CCW"
 
 # --- Pipeline dimensions ---
-# A land key is the land source, suffixed "_gaul" for the GAUL boundary variant.
 ALL_LANDS = ("osm", "usgs")
-_bounds = [args.bounds] if args.bounds else ["lsib"]
-_lands = [args.land] if args.land else list(ALL_LANDS)
-lands = [ln if b == "lsib" else f"{ln}_gaul" for b in _bounds for ln in _lands]
-world_views = ["intl", "all", "gaul"]
-
-
-def land_of(key: str) -> str:
-    """Return the land source (``osm`` or ``usgs``) of a land key."""
-    return key.removesuffix("_gaul")
-
-
-def bounds_of(key: str) -> str:
-    """Return the boundary source (``lsib`` or ``gaul``) of a land key."""
-    return "gaul" if key.endswith("_gaul") else "lsib"
-
-
-def views_of(key: str) -> list[str]:
-    """Return the world views built for a land key."""
-    return ["gaul"] if bounds_of(key) == "gaul" else ["intl", "all"]
-
+lands = [args.land] if args.land else list(ALL_LANDS)
+world_views = ["intl", "all"]
 
 geoms = ["polygons", "lines", "points"]
 
@@ -114,14 +87,12 @@ LAYERS_WORLD = [
     "voronoi_01_a",
 ]
 
-# --- Catalog folder per (land key, world view) ---
+# --- Catalog folder per (land, world view) ---
 CATALOG_DIR = {
     ("usgs", "intl"): "cc0/humanitarian",
     ("usgs", "all"): "cc0/disaggregated",
     ("osm", "intl"): "odbl/humanitarian",
     ("osm", "all"): "odbl/disaggregated",
-    ("usgs_gaul", "gaul"): "cc-by/gaul",
-    ("osm_gaul", "gaul"): "odbl/gaul",
 }
 
 # --- Directories ---
@@ -129,6 +100,5 @@ cwd = Path(__file__).parent
 tmp_dir = cwd / "../tmp"
 download_dir = tmp_dir / "download"
 input_dir = cwd / "../inputs"
-gaul_input_dir = input_dir / "gaul"
 output_dir = cwd / "../outputs"
 catalog_dir = cwd / "../catalog"
