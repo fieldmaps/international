@@ -7,14 +7,12 @@
     {
       "rel": "root",
       "href": "../../../catalog.json",
-      "type": "application/json",
-      "title": "FieldMaps International Administrative Boundaries"
+      "type": "application/json"
     },
     {
       "rel": "parent",
       "href": "../catalog.json",
-      "type": "application/json",
-      "title": "Disaggregated view"
+      "type": "application/json"
     },
     {
       "rel": "agents",
@@ -98,18 +96,18 @@
     "adm0_polygons": {
       "href": "./adm0_polygons.parquet",
       "type": "application/vnd.apache.parquet",
-      "file:size": 693683763,
-      "file:checksum": "122021548554444845505a61a3a082d2786f2315330ef2a3551d6c110e72a0eebf44",
       "roles": [
         "data"
-      ]
+      ],
+      "file:size": 693635372,
+      "file:checksum": "12200a002d3331df5eeef9b2ef1eddc54952bed5d706b4c677b7c1d098dfd953b396"
     },
     "adm0_polygons-tiles": {
       "href": "./adm0_polygons.pmtiles",
       "type": "application/vnd.pmtiles",
       "title": "adm0_polygons (vector tiles)",
-      "file:size": 446602239,
-      "file:checksum": "122073aaa9254962bb2121a9d965aa9f53158608006f0a16d9efe72a4c9986ee50a9",
+      "file:size": 446605208,
+      "file:checksum": "12208e641762e036565d694e83956986718e3bb1561dce7293b7a865b897462f0161",
       "roles": [
         "visual"
       ]

@@ -19,3 +19,4 @@ catalog/**/*.parquet
 catalog/**/*.pmtiles
 catalog/**/*.thumb.*
 catalog/.portolan/.versions.lock
+catalog/**/versions.json
