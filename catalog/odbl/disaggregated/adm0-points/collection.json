@@ -7,14 +7,12 @@
     {
       "rel": "root",
       "href": "../../../catalog.json",
-      "type": "application/json",
-      "title": "FieldMaps International Administrative Boundaries"
+      "type": "application/json"
     },
     {
       "rel": "parent",
       "href": "../catalog.json",
-      "type": "application/json",
-      "title": "Disaggregated view"
+      "type": "application/json"
     },
     {
       "rel": "agents",
@@ -106,18 +104,18 @@
     "adm0_points": {
       "href": "./adm0_points.parquet",
       "type": "application/vnd.apache.parquet",
-      "file:size": 27316,
-      "file:checksum": "1220b5432cdb676ff0f27779c6846b98b894d5e10b37605813251179f1ebd8652254",
       "roles": [
         "data"
-      ]
+      ],
+      "file:size": 27245,
+      "file:checksum": "122017937cf0f9017bd1d4b96ba9bc01e799fa3d93f603545881e280fa976df4a4fa"
     },
     "adm0_points-tiles": {
       "href": "./adm0_points.pmtiles",
       "type": "application/vnd.pmtiles",
       "title": "adm0_points (vector tiles)",
-      "file:size": 1027276,
-      "file:checksum": "12200d5144aa701669cb28842e5c9079ec6d8726765d624a2a007a4897d443116284",
+      "file:size": 1044794,
+      "file:checksum": "12206d27042491ca2f1bea6ea16f175986357b4faadd852e38f6f226004cb72b0d35",
       "roles": [
         "visual"
       ]

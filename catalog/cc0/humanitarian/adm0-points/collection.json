@@ -7,14 +7,12 @@
     {
       "rel": "root",
       "href": "../../../catalog.json",
-      "type": "application/json",
-      "title": "FieldMaps International Administrative Boundaries"
+      "type": "application/json"
     },
     {
       "rel": "parent",
       "href": "../catalog.json",
-      "type": "application/json",
-      "title": "Humanitarian view"
+      "type": "application/json"
     },
     {
       "rel": "agents",
@@ -60,8 +58,8 @@
       "bbox": [
         [
           -176.1967482,
-          -78.059618,
-          177.9620248,
+          -78.0596179,
+          177.9620247,
           78.7033489
         ]
       ]
@@ -98,18 +96,18 @@
     "adm0_points": {
       "href": "./adm0_points.parquet",
       "type": "application/vnd.apache.parquet",
-      "file:size": 24326,
-      "file:checksum": "1220eed1777787cd9a21404ca310dc812c623f68e9dc00d663c7918992df78976edb",
       "roles": [
         "data"
-      ]
+      ],
+      "file:size": 23771,
+      "file:checksum": "12207c394e136fef844e58fdc7a4a757bdb76f57339edc856035a07d1f9dbf3b5204"
     },
     "adm0_points-tiles": {
       "href": "./adm0_points.pmtiles",
       "type": "application/vnd.pmtiles",
       "title": "adm0_points (vector tiles)",
-      "file:size": 841001,
-      "file:checksum": "1220f8d58262bccfa1280b90f35df30873991fce388215b296a08b93034afa51449b",
+      "file:size": 842308,
+      "file:checksum": "1220163f6b51bbe6fc1c5ecf6b1e2a3c434d82c94b0474f1390bb45991c7065a1e0e",
       "roles": [
         "visual"
       ]
