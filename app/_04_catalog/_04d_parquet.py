@@ -4,7 +4,6 @@ from logging import getLogger
 from pathlib import Path
 
 from duckdb import DuckDBPyConnection
-from geoparquet_io.api.table import read
 
 from app.config import (
     CATALOG_DIR,
@@ -12,11 +11,15 @@ from app.config import (
     PARQUET_OPTS,
     catalog_dir,
     output_dir,
-    tmp_dir,
 )
 from app.utils import raise_issues
 
 logger = getLogger(__name__)
+# A 1-byte limit closes a row group after every row; ROW_GROUP_SIZE has a floor.
+POLYGON_OPTS = (
+    "(COMPRESSION ZSTD, COMPRESSION_LEVEL 15, GEOPARQUET_VERSION V2, "
+    "ROW_GROUP_SIZE_BYTES 1)"
+)
 
 
 def catalog_parquet(land: str, wld: str, geom: str) -> Path:
@@ -26,14 +29,17 @@ def catalog_parquet(land: str, wld: str, geom: str) -> Path:
 
 
 def _copy_parquet(
-    conn: DuckDBPyConnection, table: str, file_out: Path, *, has_id: bool
+    conn: DuckDBPyConnection, table: str, file_out: Path, *, has_id: bool, opts: str
 ) -> None:
     exclude = "(id, geom)" if has_id else "geom"
     file_out.parent.mkdir(parents=True, exist_ok=True)
     file_out.unlink(missing_ok=True)
     conn.execute(f"""--sql
-        COPY (SELECT * EXCLUDE {exclude}, geom AS geometry FROM "{table}")
-        TO '{file_out}' {PARQUET_OPTS}
+        COPY (
+            SELECT * EXCLUDE {exclude}, ST_SetCRS(geom, 'OGC:CRS84') AS geometry
+            FROM "{table}"
+            ORDER BY ST_Hilbert(geom, ST_Extent(ST_MakeEnvelope(-180, -90, 180, 90)))
+        ) TO '{file_out}' {opts}
     """)
 
 
@@ -46,21 +52,11 @@ def main(conn: DuckDBPyConnection, land: str, wld: str) -> None:
         if geom == "voronoi":
             if wld == "intl":
                 voronoi = output_dir / f"adm0/{land}/{wld}/adm0_voronoi.parquet"
-                _copy_parquet(conn, table, voronoi, has_id=has_id)
+                _copy_parquet(conn, table, voronoi, has_id=has_id, opts=PARQUET_OPTS)
             continue
-        staged = tmp_dir / f"{land}/{wld}/adm0_{geom}.parquet"
-        _copy_parquet(conn, table, staged, has_id=has_id)
         file_out = catalog_parquet(land, wld, geom)
-        file_out.parent.mkdir(parents=True, exist_ok=True)
-        read(str(staged)).sort_hilbert().write(
-            file_out,
-            compression_level=15,
-            row_group_rows=1 if geom == "polygons" else None,
-            geoparquet_version="2.0",
-            write_strategy="streaming",
-            overwrite=True,
-        )
-        staged.unlink()
+        opts = POLYGON_OPTS if geom == "polygons" else PARQUET_OPTS
+        _copy_parquet(conn, table, file_out, has_id=has_id, opts=opts)
         expected = conn.execute(f'SELECT COUNT(*) FROM "{table}"').fetchall()[0][0]
         actual = conn.execute(
             f"SELECT COUNT(*) FROM read_parquet('{file_out}')"

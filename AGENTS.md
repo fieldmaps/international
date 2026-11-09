@@ -6,8 +6,8 @@ Batch ETL pipeline that generates Administrative Level 0 (country-level) boundar
 
 - **DuckDB** with spatial extension — all spatial processing and all output formats (GPKG, OpenFileGDB, GeoParquet, XLSX) via `COPY TO ... FORMAT GDAL`
 - **pandas** — reads attribute CSVs, registered into DuckDB via `conn.register()`
-- **httpx2** — downloads input data
-- **geoparquet-io**, **tylertoo**, **portolan-cli** — catalog GeoParquet writing, PMTiles, and STAC catalog management (portolan needs `tippecanoe` on PATH)
+- **httpx2** + **tenacity**: download input data over HTTP/1.1, each fetch retried with exponential backoff
+- **tylertoo**, **portolan-cli**: PMTiles and STAC catalog management (portolan needs `tippecanoe` on PATH)
 - **Docker** — single-service image (`python:3.14-slim` + pip-installed DuckDB), no database server
 
 ## Pipeline overview
@@ -16,11 +16,11 @@ Batch ETL pipeline that generates Administrative Level 0 (country-level) boundar
 
 **`_01_download`** (`app/_01_download/`):
 
-1. `_01a_download.main()` — downloads OSM land zip, USGS land zip, LSIB GeoPackage into `tmp/download/`. Captures source publication dates atomically with each download (OSM Last-Modified header, LSIB metadata XML, World Polygons release folder name such as `WorldPolygon_11_4_BETA_24Feb2025`) and writes them to `tmp/download/{osm,usgs,lsib}/.date`; clears `tmp/download/usgs/` first. Always fetches fresh — no caching.
+1. `_01a_download.main()`: downloads OSM land zip, USGS land zip, LSIB GeoPackage into `tmp/download/`, plus the Scarborough Shoal and Minerva Reefs features (`OSM_REEFS` in `app/config.py`, failing if any is missing) from Overpass into `tmp/download/osm/reefs.json`. Then converts each source to CRS84 GeoParquet with a `geom` column beside its download: `osm/land.parquet`, `usgs/land.parquet` (the un-generalized `DoS_WP_*` layer, dumped to single polygons, Caspian Sea dropped), `lsib/lsib.parquet`, and `osm/reefs.parquet` (with `osm_type`, `osm_id`, `name`), so later steps carry no CRS handling. Captures source publication dates atomically with each download (OSM Last-Modified header, LSIB metadata XML, World Polygons release folder name such as `WorldPolygon_11_4_BETA_24Feb2025`) and writes them to `tmp/download/{osm,usgs,lsib}/.date`; clears `tmp/download/usgs/` first. Always fetches fresh, no caching.
 
 **`_02_prepare.main(land)`** (`app/_02_prepare/`):
 
-1. `_02a_preprocessing.main(conn, land)`: loads LSIB, splits its South Sudan lines into the Kafia Kingi pieces (at the Sudan claim line in `inputs/adm0_lines.parquet`) and the Ilemi Triangle 1/2/3 pieces (faces of the Administrative and Provisional lines, west to east), relabels the 1949 Armistice Line pieces on and inside the Mount Scopus enclave (the ring around the `ISR_2` point plus the two DMZ lines) as `1949 Armistice Line Mount Scopus`, then `ST_Read`s the requested land source, snapping land coordinates within 1e-9 of ±180°/±90° to the exact value (fails if any extends past it)
+1. `_02a_preprocessing.main(conn, land)`: loads LSIB, splits its South Sudan lines into the Kafia Kingi pieces (at the Sudan claim line in `inputs/adm0_lines.parquet`) and the Ilemi Triangle 1/2/3 pieces (faces of the Administrative and Provisional lines, west to east), relabels the 1949 Armistice Line pieces on and inside the Mount Scopus enclave (the ring around the `ISR_2` point plus the two DMZ lines) as `1949 Armistice Line Mount Scopus`, then reads the requested land source's `land.parquet` (for `osm`, appending the `reefs.parquet` polygons, which OSM maps as reefs and so leaves out of its coastline-derived land, and failing if any intersects that land), snapping land coordinates within 1e-9 of ±180°/±90° to the exact value (fails if any extends past it)
 2. `_02b_attributes.main(conn, land)` — loads CSV attribute tables for the requested land
 
 Source publication dates are read from the `.date` files written during download via `app.utils.get_source_date(source)` (no DuckDB table). `wld_date` is the LSIB date; `wld_update` is the land source's date.
@@ -36,7 +36,7 @@ Source publication dates are read from the `.date` files written during download
 
 1. For each `world` in `["intl", "all"]`:
    - `_04a_lines.main`, `_04b_polygons.main`, `_04c_points.main`: final output tables; points skip ids with `label_{world} = 0` (the polygon keeps its name, no map label); lines with `adm_id_{world}` set in `adm0_lines.csv` take that row's attributes and merge into it; lines carry `iso3_1`/`iso3_2`, the `iso_3` of the world-view unit on each side (alphabetical; `iso3_2` empty when both sides are one unit), from `_04a_lines.sides`, which splits each `lines_00` row by the `voronoi_00` faces it borders, so a line is unique on (`adm_id`, `iso3_1`, `iso3_2`); `iso3_1_{world}`/`iso3_2_{world}` in the CSV override them and merge the overridden pieces into one line
-   - `_04d_parquet.main`: writes Hilbert-sorted GeoParquet 2.0 (no bbox column) via geoparquet-io to `catalog/{cc0,odbl}/{humanitarian,disaggregated}/adm0-{polygons,lines,points}/` (land `usgs` → `cc0`, `osm` → `odbl`; world `intl` → `humanitarian`, `all` → `disaggregated`); polygons get one row per row group; voronoi (intl only) goes to `outputs/`
+   - `_04d_parquet.main`: writes Hilbert-sorted GeoParquet 2.0 (no bbox column, `OGC:CRS84`, ZSTD 15) with DuckDB `COPY` to `catalog/{cc0,odbl}/{humanitarian,disaggregated}/adm0-{polygons,lines,points}/` (land `usgs` → `cc0`, `osm` → `odbl`; world `intl` → `humanitarian`, `all` → `disaggregated`); polygons get one row per row group (`ROW_GROUP_SIZE_BYTES 1`, since `ROW_GROUP_SIZE` has a floor of about 2,000 rows); voronoi (intl only) goes to `outputs/`
    - `_04e_validate.main`: checks final lines/polygons/points tables (geometry validity, lon/lat bounds, no vertex within 1e-6 of ±180°/±90° but off it, ID uniqueness, attribute-join completeness, polygon topology, points-to-polygons row parity excluding `label_{world} = 0` parts) before world-scoped tables are dropped; `ST_CoverageInvalidEdges` at gap width 0 is the coverage check, since a width of 1e-5° also flags open-sea notches where a border splits a sharp coastline angle, which are expected
    - `_04f_cleanup.main`: drops per-world tables to free memory before the next world iteration
 2. `_04g_portolan.main`: builds a PMTiles file beside each catalog parquet with tylertoo, then `portolan add <collection>`, which registers the PMTiles, default style, and thumbnail
@@ -112,7 +112,10 @@ TO 'file.gdb' (FORMAT GDAL, DRIVER 'OpenFileGDB', GEOMETRY_TYPE 'MULTIPOLYGON')
 **GeoParquet**:
 
 ```sql
-COPY (SELECT * EXCLUDE (id, geom), geom AS geometry FROM "table" ORDER BY adm0_id)
+COPY (
+    SELECT * EXCLUDE (id, geom), ST_SetCRS(geom, 'OGC:CRS84') AS geometry
+    FROM "table" ORDER BY adm0_id
+)
 TO 'file.parquet' (COMPRESSION ZSTD, GEOPARQUET_VERSION V2, ROW_GROUP_SIZE 1)
 ```
 
@@ -130,6 +133,7 @@ TO 'file.xlsx' (FORMAT GDAL, DRIVER 'XLSX')
 | `LAND_OSM_URL`  | osmdata.openstreetmap.de — land-polygons-complete-4326.zip |
 | `LAND_USGS_URL` | data.geodata.state.gov — World Polygons (GSV-derived)      |
 | `LSIB_URL`      | data.geodata.state.gov — LSIB GeoPackage                   |
+| `OVERPASS_URL`  | overpass-api.de: Scarborough Shoal and Minerva Reefs       |
 
 ## Output structure
 
