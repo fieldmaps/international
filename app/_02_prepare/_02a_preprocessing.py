@@ -5,8 +5,8 @@ from logging import getLogger
 
 from duckdb import DuckDBPyConnection
 
-from app.config import download_dir, input_dir
-from app.utils import get_source_date, raise_issues
+from app.config import download_dir
+from app.utils import get_source_date, raise_issues, read_input
 
 logger = getLogger(__name__)
 
@@ -98,7 +98,7 @@ def _replace(conn: DuckDBPyConnection, where: str, groups: dict) -> None:
 def _split_kafia_kingi(conn: DuckDBPyConnection) -> None:
     """Split LSIB SS-SD and CF-SS along the face the Sudan claim line closes."""
     claim = conn.execute(f"""--sql
-        SELECT ST_AsWKB(geom) FROM read_parquet('{input_dir / "adm0_lines.parquet"}')
+        SELECT ST_AsWKB(geom) FROM {read_input(conn, "adm0_lines.parquet")}
         WHERE COUNTRY2 = 'Kafia Kingi' AND LABEL = 'Sudan Claim'
     """).fetchall()[0][0]
     (ss_sd,), (cf_ss,) = _lsib(conn, SS_SD, 1), _lsib(conn, CF_SS, 1)
@@ -169,7 +169,7 @@ def _cut(conn: DuckDBPyConnection, line: bytes, face: bytes, fn: str) -> list:
 def _split_mount_scopus(conn: DuckDBPyConnection) -> None:
     """Relabel the LSIB lines on and inside the Mount Scopus enclave."""
     point = conn.execute(f"""--sql
-        SELECT ST_AsWKB(geom) FROM read_parquet('{input_dir / "adm0_points.parquet"}')
+        SELECT ST_AsWKB(geom) FROM {read_input(conn, "adm0_points.parquet")}
         WHERE id = 'ISR_2'
     """).fetchall()[0][0]
     (ring_line,) = _lsib(conn, SCOPUS_RING, 1)

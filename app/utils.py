@@ -19,6 +19,7 @@ from .config import (
     PARQUET_OPTS,
     debug,
     download_dir,
+    input_dir,
     tmp_dir,
 )
 
@@ -234,6 +235,18 @@ def load_parquet(conn: DuckDBPyConnection, table: str) -> None:
     """Load a parquet file from tmp_dir into a DuckDB table."""
     path = tmp_dir / f"{table}.parquet"
     conn.execute(f"CREATE OR REPLACE TABLE \"{table}\" AS SELECT * FROM '{path}'")
+
+
+def read_input(conn: DuckDBPyConnection, file: str) -> str:
+    """Subquery over an inputs/ parquet with its geometry as geom and no bbox column."""
+    path = input_dir / file
+    cols = conn.execute(f"DESCRIBE SELECT * FROM read_parquet('{path}')").fetchall()
+    exprs = [
+        '"geometry" AS geom' if c == "geometry" else f'"{c}"'
+        for c, *_ in cols
+        if c not in ("geom_bbox", "geometry_bbox")
+    ]
+    return f"(SELECT {', '.join(exprs)} FROM read_parquet('{path}'))"
 
 
 def copy_from_db(conn: DuckDBPyConnection, src: Path, table: str) -> None:
