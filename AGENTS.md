@@ -139,8 +139,8 @@ TO 'file.xlsx' (FORMAT GDAL, DRIVER 'XLSX')
 
 ```
 catalog/{cc0,odbl}/{humanitarian,disaggregated}/adm0-{polygons,lines,points}/
-  adm0_*.parquet, adm0_*.pmtiles, adm0_*.thumb.jpg   (gitignored)
-  collection.json, README.md, AGENTS.md, styles/default.json
+  adm0_*.parquet, adm0_*.pmtiles, adm0_*.thumb.jpg, collection.json, versions.json   (gitignored)
+  README.md, AGENTS.md, styles/default.json, .portolan/metadata.yaml
 
 outputs/adm0/{osm,usgs}/{intl,all}/
   adm0_polygons.{gpkg,gdb,parquet,xlsx}.zip / .parquet / .xlsx
