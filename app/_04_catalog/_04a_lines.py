@@ -208,6 +208,8 @@ def _clip(conn: DuckDBPyConnection, land: str, keys: list[str], tmp: str) -> Non
                 """,
                 [*vals, line_wkb, land_wkb],
             )
+    # LSIB is kept whole so boundaries running into water stay visible.
+    conn.execute(f'INSERT INTO "{tmp}" SELECT {key_list}, geom FROM lsib_00')
 
 
 def _dissolve_sql(keys: list[str], tmp: str) -> str:
