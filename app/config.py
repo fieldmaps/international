@@ -57,6 +57,9 @@ LAND_OSM_URL = (
 LAND_USGS_URL = "https://data.geodata.state.gov/WorldPolygons.zip"
 LSIB_URL = "https://data.geodata.state.gov/LSIB.gpkg"
 LSIB_META_URL = "https://geodata.state.gov/geonetwork/srv/api/records/3bdb81a0-c1b9-439a-a0b1-85dac30c59b2"
+OVERPASS_URL = "https://overpass-api.de/api/interpreter"
+# Scarborough Shoal and Minerva Reefs: mapped as reefs, so absent from OSM land.
+OSM_REEFS = {"way": (43145194, 43145209), "relation": (18554868,)}
 
 # --- Export options ---
 PARQUET_OPTS = "(COMPRESSION ZSTD, COMPRESSION_LEVEL 15, GEOPARQUET_VERSION V2)"

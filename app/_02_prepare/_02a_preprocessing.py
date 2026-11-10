@@ -1,15 +1,12 @@
 """Load OSM land, USGS land, and LSIB files into DuckDB."""
 
-import re
-import sqlite3
 from collections import defaultdict
 from logging import getLogger
-from pathlib import Path
 
 from duckdb import DuckDBPyConnection
 
-from app.config import download_dir, input_dir
-from app.utils import get_source_date, raise_issues
+from app.config import download_dir
+from app.utils import get_source_date, raise_issues, read_input
 
 logger = getLogger(__name__)
 
@@ -101,7 +98,7 @@ def _replace(conn: DuckDBPyConnection, where: str, groups: dict) -> None:
 def _split_kafia_kingi(conn: DuckDBPyConnection) -> None:
     """Split LSIB SS-SD and CF-SS along the face the Sudan claim line closes."""
     claim = conn.execute(f"""--sql
-        SELECT ST_AsWKB(geom) FROM read_parquet('{input_dir / "adm0_lines.parquet"}')
+        SELECT ST_AsWKB(geom) FROM {read_input(conn, "adm0_lines.parquet")}
         WHERE COUNTRY2 = 'Kafia Kingi' AND LABEL = 'Sudan Claim'
     """).fetchall()[0][0]
     (ss_sd,), (cf_ss,) = _lsib(conn, SS_SD, 1), _lsib(conn, CF_SS, 1)
@@ -172,7 +169,7 @@ def _cut(conn: DuckDBPyConnection, line: bytes, face: bytes, fn: str) -> list:
 def _split_mount_scopus(conn: DuckDBPyConnection) -> None:
     """Relabel the LSIB lines on and inside the Mount Scopus enclave."""
     point = conn.execute(f"""--sql
-        SELECT ST_AsWKB(geom) FROM read_parquet('{input_dir / "adm0_points.parquet"}')
+        SELECT ST_AsWKB(geom) FROM {read_input(conn, "adm0_points.parquet")}
         WHERE id = 'ISR_2'
     """).fetchall()[0][0]
     (ring_line,) = _lsib(conn, SCOPUS_RING, 1)
@@ -217,13 +214,13 @@ def _snap_to_extent(conn: DuckDBPyConnection, land: str) -> None:
     """Snap coordinates within ``EDGE_TOL`` of ±180/±90 to the exact value."""
     table = f"{land}_land_00"
     # Aggregate FILTER: DuckDB 2.0.0 drops rows on some scan WHERE filters.
-    fids, crs = conn.execute(f"""--sql
+    fids = conn.execute(f"""--sql
         SELECT list(FID) FILTER (
             WHERE ST_XMin(geom) < -180 + {EDGE_TOL} OR ST_XMax(geom) > 180 - {EDGE_TOL}
                 OR ST_YMin(geom) < -90 + {EDGE_TOL} OR ST_YMax(geom) > 90 - {EDGE_TOL}
-        ), any_value(ST_CRS(geom))
+        )
         FROM "{table}"
-    """).fetchall()[0]
+    """).fetchall()[0][0]
     conn.execute(f"""--sql
         CREATE OR REPLACE TEMP MACRO snap(v, e) AS CASE
             WHEN abs(v - e) < {EDGE_TOL} THEN e
@@ -277,10 +274,10 @@ def _snap_to_extent(conn: DuckDBPyConnection, land: str) -> None:
                     ) AS g
                     FROM lines GROUP BY p, gt
                 )
-                SELECT ST_SetCRS(CASE
+                SELECT CASE
                     WHEN any_value(gt) = 'POLYGON' THEN any_value(g)
                     ELSE ST_Collect(list(g ORDER BY p))
-                END, '{crs}')
+                END
                 FROM polys
             )
             WHERE FID = $1
@@ -311,52 +308,64 @@ def _fix_land(conn: DuckDBPyConnection, land: str) -> None:
 
 
 def _load_lsib(conn: DuckDBPyConnection) -> None:
-    lsib_path = download_dir / "lsib/LSIB.gpkg"
-    conn.execute(
-        f"CREATE TABLE IF NOT EXISTS lsib_00 AS SELECT * FROM ST_Read('{lsib_path}')"
-    )
+    path = download_dir / "lsib/lsib.parquet"
+    conn.execute(f"CREATE TABLE IF NOT EXISTS lsib_00 AS FROM read_parquet('{path}')")
     _fix_lsib(conn)
 
 
-def _load_osm(conn: DuckDBPyConnection, table: str) -> None:
-    osm_path = next((download_dir / "osm").rglob("land_polygons.shp"))
-    conn.execute(
-        f'CREATE OR REPLACE TABLE "{table}" AS '
-        f"SELECT * EXCLUDE OGC_FID FROM ST_Read('{osm_path}')"
-    )
-
-
-def _wp_layer(gpkg: Path) -> str:
-    """Return the un-generalized World Polygons layer (e.g. ``DoS_WP_11_4``)."""
-    with sqlite3.connect(gpkg) as db:
-        return next(
-            name
-            for (name,) in db.execute(
-                "SELECT table_name FROM gpkg_contents WHERE data_type='features'"
+def _add_reefs(conn: DuckDBPyConnection, table: str) -> None:
+    """Append the downloaded reef polygons to the OSM land table if none touches it."""
+    path = download_dir / "osm/reefs.parquet"
+    reefs = conn.execute(f"""--sql
+        SELECT osm_type, osm_id, ST_AsWKB(geom), ST_XMin(geom),
+            ST_YMin(geom), ST_XMax(geom), ST_YMax(geom)
+        FROM read_parquet('{path}')
+    """).fetchall()
+    issues = []
+    for osm_type, osm_id, wkb, *box in reefs:
+        # Aggregate FILTER: DuckDB 2.0.0 drops rows on some scan WHERE filters.
+        fids = conn.execute(
+            f"""--sql
+            SELECT list(FID) FILTER (
+                WHERE ST_XMax(geom) >= $1 AND ST_XMin(geom) <= $3
+                    AND ST_YMax(geom) >= $2 AND ST_YMin(geom) <= $4
             )
-            if re.fullmatch(r"DoS_WP_\d+_\d+", name)
-        )
-
-
-def _load_usgs(conn: DuckDBPyConnection, table: str) -> None:
-    # Caspian Sea is the only DoS_WP_* feature without a WP_Name; filter it out.
-    usgs_path = next((download_dir / "usgs").rglob("WorldPolygons*.gpkg"))
-    layer = _wp_layer(usgs_path)
+            FROM "{table}"
+            """,
+            box,
+        ).fetchall()[0][0]
+        issues += [
+            f"{osm_type} {osm_id} intersects land FID {fid}"
+            for fid in fids or []
+            if conn.execute(
+                f"""--sql
+                SELECT ST_Intersects(geom, ST_GeomFromWKB($2))
+                FROM "{table}" WHERE FID = $1
+                """,
+                [fid, wkb],
+            ).fetchall()[0][0]
+        ]
+    raise_issues(issues, f"{table}_reefs")
     conn.execute(f"""--sql
-        CREATE OR REPLACE TABLE "{table}" AS
-        SELECT row_number() OVER () AS "FID", geom
-        FROM (
-            SELECT UNNEST(ST_Dump(geom)).geom AS geom
-            FROM ST_Read('{usgs_path}', layer='{layer}')
-            WHERE WP_Name IS NOT NULL
-        )
+        INSERT INTO "{table}"
+        SELECT (SELECT max(FID) FROM "{table}") + row_number() OVER (), geom
+        FROM read_parquet('{path}')
     """)
+
+
+def _load_land(conn: DuckDBPyConnection, land: str) -> None:
+    table = f"{land}_land_00"
+    path = download_dir / f"{land}/land.parquet"
+    conn.execute(
+        f"CREATE OR REPLACE TABLE \"{table}\" AS SELECT * FROM read_parquet('{path}')"
+    )
+    if land == "osm":
+        _add_reefs(conn, table)
 
 
 def main(conn: DuckDBPyConnection, land: str) -> None:
     """Load LSIB plus the given land source into DuckDB."""
     _load_lsib(conn)
-    loader = {"osm": _load_osm, "usgs": _load_usgs}[land]
-    loader(conn, f"{land}_land_00")
+    _load_land(conn, land)
     _fix_land(conn, land)
     logger.info("preprocessing %s", land)

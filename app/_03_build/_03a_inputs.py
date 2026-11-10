@@ -4,8 +4,14 @@ from logging import getLogger
 
 from duckdb import DuckDBPyConnection
 
-from app.config import input_dir, tmp_dir
-from app.utils import copy_from_db, discard, edge_vertex_issues, raise_issues
+from app.config import tmp_dir
+from app.utils import (
+    copy_from_db,
+    discard,
+    edge_vertex_issues,
+    raise_issues,
+    read_input,
+)
 
 logger = getLogger(__name__)
 
@@ -19,16 +25,12 @@ def main(conn: DuckDBPyConnection, land: str) -> None:
         (f"{land}_lines_00", "adm0_lines.parquet"),
         (f"{land}_points_00", "adm0_points.parquet"),
     ]:
-        path = input_dir / file
-        conn.execute(
-            f"CREATE OR REPLACE TABLE \"{layer}\" AS SELECT * FROM read_parquet('{path}')"
-        )
+        query = read_input(conn, file)
+        conn.execute(f'CREATE OR REPLACE TABLE "{layer}" AS SELECT * FROM {query}')
     lines = f"{land}_lines_00"
     raise_issues(edge_vertex_issues(conn, f'"{lines}"', lines), f"{land}_inputs")
     cols = [r[0] for r in conn.execute(f'DESCRIBE "{land}_lines_00"').fetchall()]
-    col_list = ", ".join(
-        "ST_SetCRS(geom, 'OGC:CRS84')" if c == "geom" else f'"{c}"' for c in cols
-    )
+    col_list = ", ".join(f'"{c}"' for c in cols)
     conn.execute(f'INSERT INTO "{land}_lines_00" SELECT {col_list} FROM lsib_00')
     discard(conn, "lsib_00")
     logger.info("%s_inputs", land)
