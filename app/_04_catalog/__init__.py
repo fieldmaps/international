@@ -19,7 +19,7 @@ def main(land: str) -> None:
     conn = get_conn("_04_catalog", land)
     prepare_db = tmp_dir / f"{land}__02_prepare.duckdb"
     build_db = tmp_dir / f"{land}__03_build.duckdb"
-    for table in [f"{land}_attributes_points", f"{land}_attributes_lines"]:
+    for table in [f"{land}_attributes_points", f"{land}_attributes_lines", "lsib_00"]:
         copy_from_db(conn, prepare_db, table)
     for table in [
         f"{land}_land_01",
