@@ -167,7 +167,7 @@
 166,DJ,DJIBOUTI,SO,SOMALIA,1,,International Boundary,,,,,,,,,,
 167,DO,DOMINICAN REP.,HT,HAITI,1,,International Boundary,,,,,,,,,,
 168,EC,ECUADOR,PE,PERU,1,,International Boundary,,,,,,,,,,
-169,EG,EGYPT,EG,EGYPT,1,,International Boundary,,,,,,,,,EGY,SDN
+169,EG,EGYPT,EG,EGYPT,1,,International Boundary,,,,,,,,,,
 170,EG,EGYPT,XG,Gaza Strip,1,,International Boundary,,,,,,,,,,
 171,EG,EGYPT,IL,ISRAEL,1,,International Boundary,,,,,,,,,,
 172,EG,EGYPT,LY,LIBYA,1,,International Boundary,,,,,,,,,,
@@ -325,7 +325,7 @@
 324,SS,SOUTH SUDAN,QN,Abyei,1,,International Boundary,,separation,3,3,,,,,,
 325,SS,SOUTH SUDAN,SD,SUDAN,1,,International Boundary,,armistice,2,2,,,,,,
 326,SS,SOUTH SUDAN,UG,UGANDA,1,,International Boundary,,,,,,,,,,
-328,SD,SUDAN,SD,SUDAN,1,,International Boundary,,,,,,,,,EGY,SDN
+328,SD,SUDAN,SD,SUDAN,1,,International Boundary,,,,,,,,,,
 329,SY,SYRIA,TR,TURKEY,1,,International Boundary,,,,,,,,,,
 330,TJ,TAJIKISTAN,UZ,UZBEKISTAN,1,,International Boundary,,,,,,,,,,
 331,TZ,TANZANIA,UG,UGANDA,1,,International Boundary,,,,,,,,,,
@@ -406,7 +406,7 @@
 407,MA,MOROCCO,EH,WESTERN SAHARA,2,,Other Line of International Separation,,international,,1,,,,,ESH,MAR
 408,PK,PAKISTAN,Q2,Azad Kashmir and Northern Areas,2,India Claim,Other Line of International Separation,,,,,,,,,,
 409,RS,SERBIA,Q2,Vojvodina,2,,Other Line of International Separation,Autonomous Region,autonomous,,,,,,,,
-410,SS,SOUTH SUDAN,Q2,Ilemi Triangle 1,2,Administrative Boundary,Other Line of International Separation,,,,,,,,,KEN,SSD
+410,SS,SOUTH SUDAN,Q2,Ilemi Triangle 1,2,Administrative Boundary,Other Line of International Separation,,,,,,,,,,
 411,SS,SOUTH SUDAN,Q2,Ilemi Triangle 2,2,Provisional Boundary,Other Line of International Separation,,international,,1,,,,,,
 412,SS,SOUTH SUDAN,Q2,Ilemi Triangle 3,2,Administrative Boundary,Other Line of International Separation,,,,0,,,,,,
 413,SS,SOUTH SUDAN,Q2,Kafia Kingi,2,Sudan Claim,Other Line of International Separation,,,,,,325,,,,
