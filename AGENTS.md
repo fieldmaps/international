@@ -190,12 +190,12 @@ Re-snapshot after intentional pipeline changes (`uv run python -m app --step _03
 
 ## Publishing
 
-The catalog publishes to Source Cooperative at `s3://fieldmaps/international/`. Credentials are the temporary keys from the source.coop website, pasted into the repo-root `.env` as `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN` (with `AWS_DEFAULT_REGION="us-east-1"`, `AWS_ENDPOINT_URL="https://data.source.coop"`). Service-account `sck_` API keys can read but not write `fieldmaps/international`.
+The catalog publishes to Source Cooperative at `s3://fieldmaps/international/` as a FieldMaps service account. Save its `sck_` API key to a file only your user can read, then set `AWS_ROLE_ARN` (`arn:aws:iam::<service-account-id>:role/FullAccess`) and `AWS_WEB_IDENTITY_TOKEN_FILE` (absolute path to the key file) in the repo-root `.env`, from `.env.example`. Needs AWS CLI 2.13 or later.
 
-Check the keys (expect `assumed-role/_default/...`):
+Check access:
 
 ```bash
-env -i HOME=$HOME PATH=$PATH bash -c 'set -a; source .env; set +a; aws sts get-caller-identity --endpoint-url https://data.source.coop/.sts'
+env -i HOME=$HOME PATH=$PATH bash -c 'set -a; source .env; set +a; aws s3 ls s3://fieldmaps/international/'
 ```
 
 Push with `--push` / `PUSH=1`: after `portolan check`, `_04_catalog.finalize()` runs `aws s3 sync` of `catalog/` to `PORTOLAN_REMOTE` with `AWS_CONFIG_FILE=aws.config` (per-part retries, classic transfer client), first everything except `versions.json`, then the `versions.json` files, skipping hidden paths. A failed upload makes `aws s3 sync` exit non-zero and the push raises. Needs the AWS CLI on PATH. To push an already-built catalog without rerunning `_04_catalog`:

@@ -1,7 +1,7 @@
 """Run portolan on a catalog and sync it to its remote with the AWS CLI.
 
 Vendored identically in fieldmaps/subnational, fieldmaps/international,
-OCHA-DAP/cod-site and OCHA-DAP/adm0-site. Needs portolan-cli 0.9.0 or later.
+OCHA-DAP/cod-app and OCHA-DAP/adm0-app. Needs portolan-cli 0.9.0 or later.
 """
 
 import json
