@@ -16,7 +16,7 @@ Admin level 0 boundaries built from the U.S. Department of State's LSIB boundary
 
 - Never combine files from `cc0/` and `odbl/` in one query or output; the result falls under ODbL.
 - `adm0_id` is `{adm0_src}-{source date YYYYMMDD}`. Join across releases on `adm0_src`.
-- Polygons have one row per row group. Filter on `iso_3` or `adm0_id` to read single areas.
+- Polygons have one row per row group. Filter on `iso3` or `adm0_id` to read single areas.
 
 ## License
 

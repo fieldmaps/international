@@ -77,14 +77,14 @@ def _sided(conn: DuckDBPyConnection, land: str, world: str) -> str:
     conn.execute(f"""--sql
         CREATE OR REPLACE TABLE "{out}" AS
         WITH unit AS (
-            SELECT DISTINCT v.id, p.iso_3
+            SELECT DISTINCT v.id, p.iso3
             FROM "{land}_voronoi_00" AS v
             JOIN "{land}_attributes_points" AS p ON p.id = COALESCE(v."a_{world}", v.id)
         ),
         coded AS (
             SELECT s.country1, s.country2, s.rank, s.label,
-                   LEAST(a.iso_3, b.iso_3) AS lo,
-                   GREATEST(a.iso_3, b.iso_3) AS hi,
+                   LEAST(a.iso3, b.iso3) AS lo,
+                   GREATEST(a.iso3, b.iso3) AS hi,
                    s.geom
             FROM "{land}_lines_sides" AS s
             JOIN unit AS a ON a.id = s.face_a
@@ -317,10 +317,11 @@ def main(conn: DuckDBPyConnection, land: str, world: str) -> None:
     for wld in world_views:
         for col in [f"rank_{wld}", f"adm_id_{wld}", f"iso3_1_{wld}", f"iso3_2_{wld}"]:
             conn.execute(f'ALTER TABLE "{out}" DROP COLUMN IF EXISTS "{col}"')
-    head = "adm_id, cc1, country1, cc2, country2, iso3_1, iso3_2"
+    head = "adm_id, iso3_1, iso3_2"
+    lsib = "cc1, country1, cc2, country2"
     conn.execute(f"""--sql
         CREATE OR REPLACE TABLE "{out}" AS
-        SELECT {head}, * EXCLUDE ({head}) FROM "{out}"
+        SELECT {head}, * EXCLUDE ({head}, {lsib}) FROM "{out}"
     """)
 
     logger.info("%s_%s", land, world)

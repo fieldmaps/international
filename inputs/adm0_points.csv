@@ -1,4 +1,4 @@
-﻿id,a_intl,p_intl,a_all,p_all,label_intl,label_all,adm0_id,adm0_src,adm0_name,adm0_name1,adm0_name2,iso_cd,iso_2,iso_3,iso_3_grp,region3_cd,region3_nm,region2_cd,region2_nm,region1_cd,region1_nm,status_cd,status_nm,wld_date,wld_update,wld_land,wld_view,wld_notes
+﻿id,a_intl,p_intl,a_all,p_all,label_intl,label_all,adm0_id,adm0_src,adm0_name,adm0_name1,adm0_name2,isonum,iso2,iso3,iso3_grp,region3_cd,region3_nm,region2_cd,region2_nm,region1_cd,region1_nm,status_cd,status_nm,wld_date,wld_update,wld_land,wld_view,wld_notes
 ABW,,,,,,,,,Aruba (NL),Aruba,,533,AW,ABW,NLD,29,Caribbean,419,Latin America and the Caribbean,19,Americas,4,Territory,,,,,
 AFG,,,,,,,,,Afghanistan,Afghanistan,,4,AF,AFG,,,,34,Southern Asia,142,Asia,1,State,,,,,
 AGO,,,,,,,,,Angola,Angola,,24,AO,AGO,,17,Middle Africa,202,Sub-Saharan Africa,2,Africa,1,State,,,,,
