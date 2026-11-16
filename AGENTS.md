@@ -190,7 +190,7 @@ Re-snapshot after intentional pipeline changes (`uv run python -m app --step _03
 
 ## Publishing
 
-The catalog publishes to Source Cooperative at `s3://fieldmaps/international/` as a FieldMaps service account. Save its `sck_` API key to a file only your user can read, then set `AWS_ROLE_ARN` (`arn:aws:iam::<service-account-id>:role/FullAccess`) and `AWS_WEB_IDENTITY_TOKEN_FILE` (absolute path to the key file) in the repo-root `.env`, from `.env.example`. Needs AWS CLI 2.13 or later.
+The catalog publishes to Source Cooperative at `s3://fieldmaps/international/` as a FieldMaps service account. Save its `sck_` API key to a file only your user can read, then set `AWS_ROLE_ARN` (`arn:aws:iam::<service-account-id>:role/FullAccess`) and `AWS_WEB_IDENTITY_TOKEN_FILE` (absolute path to the key file) in the repo-root `.env`, from `.env.example`, with no `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` or `AWS_SESSION_TOKEN` in `.env` or the shell, since the AWS CLI uses those first. Needs AWS CLI 2.13 or later.
 
 Check access:
 
@@ -204,7 +204,7 @@ Push with `--push` / `PUSH=1`: after `portolan check`, `_04_catalog.finalize()` 
 uv run python -c 'from app.config import catalog_dir; from app._04_catalog import fieldmaps_publish as p; p.push(catalog_dir)'
 ```
 
-`app/_04_catalog/fieldmaps_publish.py` is kept byte-identical with `fieldmaps/subnational` and `OCHA-DAP/cod-site`; change it in all three repos.
+`app/_04_catalog/fieldmaps_publish.py` is kept byte-identical with `fieldmaps/subnational`; change it in both repos.
 
 ## Coding preferences
 
