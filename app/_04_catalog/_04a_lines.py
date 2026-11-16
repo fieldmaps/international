@@ -90,8 +90,8 @@ def _sided(conn: DuckDBPyConnection, land: str, world: str) -> str:
             JOIN unit AS a ON a.id = s.face_a
             JOIN unit AS b ON b.id = s.face_b
         )
-        SELECT country1, country2, rank, label, lo AS iso3_1,
-               CASE WHEN lo != hi THEN hi END AS iso3_2, ST_Union_Agg(geom) AS geom
+        SELECT country1, country2, rank, label, lo AS a_iso3,
+               CASE WHEN lo != hi THEN hi END AS b_iso3, ST_Union_Agg(geom) AS geom
         FROM coded
         GROUP BY ALL
     """)
@@ -109,7 +109,7 @@ def _split(conn: DuckDBPyConnection, sided: str, tmp: str, out: str) -> None:
     """)
     conn.execute(f"""--sql
         CREATE OR REPLACE TABLE "{out}" AS
-        SELECT t.country1, t.country2, t.rank, t.label, s.iso3_1, s.iso3_2, t.geom
+        SELECT t.country1, t.country2, t.rank, t.label, s.a_iso3, s.b_iso3, t.geom
         FROM "{tmp}" AS t LEFT JOIN "{sided}_k" AS s ON {on}
         WHERE COALESCE(s.k, 1) = 1
     """)
@@ -126,12 +126,12 @@ def _split(conn: DuckDBPyConnection, sided: str, tmp: str, out: str) -> None:
             INSERT INTO "{out}"
             WITH t AS (SELECT ST_GeomFromWKB($5) AS g),
             p AS (
-                SELECT iso3_1, iso3_2, geom FROM "{sided}"
+                SELECT a_iso3, b_iso3, geom FROM "{sided}"
                 WHERE country1 = $1 AND country2 = $2 AND rank = $3
                 AND label IS NOT DISTINCT FROM $4
             ),
             x AS (
-                SELECT iso3_1, iso3_2,
+                SELECT a_iso3, b_iso3,
                        ST_CollectionExtract(ST_Intersection(t.g, p.geom), 2) AS g
                 FROM p, t
             ),
@@ -143,13 +143,13 @@ def _split(conn: DuckDBPyConnection, sided: str, tmp: str, out: str) -> None:
             ),
             rn AS (SELECT row_number() OVER () AS rid, g FROM r),
             ra AS (
-                SELECT p.iso3_1, p.iso3_2, rn.g
+                SELECT p.a_iso3, p.b_iso3, rn.g
                 FROM rn, p
                 QUALIFY row_number() OVER (
                     PARTITION BY rn.rid ORDER BY ST_Distance(rn.g, p.geom)
                 ) = 1
             )
-            SELECT $1, $2, $3, $4, iso3_1, iso3_2, g
+            SELECT $1, $2, $3, $4, a_iso3, b_iso3, g
             FROM (SELECT * FROM x UNION ALL SELECT * FROM ra)
             WHERE NOT ST_IsEmpty(g)
             """,
@@ -227,12 +227,12 @@ def _dissolve_sql(keys: list[str], tmp: str) -> str:
 
 
 def _merge(conn: DuckDBPyConnection, land: str, world: str) -> None:
-    """Give lines with ``adm_id_{world}`` set that row's attributes, merged into it."""
+    """Give lines with ``line_id_{world}`` set that row's attributes, merged into it."""
     attrs = f"{land}_attributes_lines"
     out = f"{land}_lines_02_{world}"
     pairs = conn.execute(f"""--sql
-        SELECT adm_id, "adm_id_{world}"::INTEGER FROM "{out}"
-        WHERE "adm_id_{world}" IS NOT NULL
+        SELECT line_id, "line_id_{world}"::INTEGER FROM "{out}"
+        WHERE "line_id_{world}" IS NOT NULL
     """).fetchall()
     if not pairs:
         return
@@ -240,20 +240,20 @@ def _merge(conn: DuckDBPyConnection, land: str, world: str) -> None:
     conn.execute(
         f"""--sql
         CREATE OR REPLACE TABLE "{out}" AS
-        SELECT * FROM "{out}" WHERE NOT COALESCE(list_contains($1, adm_id), false)
+        SELECT * FROM "{out}" WHERE NOT COALESCE(list_contains($1, line_id), false)
         UNION ALL BY NAME
         SELECT
             b.*,
-            o.iso3_1,
-            o.iso3_2,
+            o.a_iso3,
+            o.b_iso3,
             '{world}' AS wld_view,
             ST_Multi(
                 ST_ReducePrecision(ST_Union_Agg(o.geom), {GEOM_PRECISION})
             ) AS geom
         FROM "{out}" AS o
         JOIN "{attrs}" AS b
-        ON b.adm_id = COALESCE(o."adm_id_{world}"::INTEGER, o.adm_id)
-        WHERE list_contains($1, o.adm_id)
+        ON b.line_id = COALESCE(o."line_id_{world}"::INTEGER, o.line_id)
+        WHERE list_contains($1, o.line_id)
         GROUP BY ALL
         """,
         [ids],
@@ -275,11 +275,11 @@ def main(conn: DuckDBPyConnection, land: str, world: str) -> None:
 
     conn.execute(f"""--sql
         CREATE OR REPLACE TABLE "{out}" AS
-        WITH clipped AS ({_dissolve_sql([*keys, "iso3_1", "iso3_2"], split)})
+        WITH clipped AS ({_dissolve_sql([*keys, "a_iso3", "b_iso3"], split)})
         SELECT
             b.*,
-            COALESCE(b."iso3_1_{world}", a.iso3_1) AS iso3_1,
-            COALESCE(b."iso3_2_{world}", a.iso3_2) AS iso3_2,
+            COALESCE(b."a_iso3_{world}", a.a_iso3) AS a_iso3,
+            COALESCE(b."b_iso3_{world}", a.b_iso3) AS b_iso3,
             '{world}' AS wld_view,
             a.geom
         FROM clipped AS a
@@ -292,7 +292,7 @@ def main(conn: DuckDBPyConnection, land: str, world: str) -> None:
     """)
 
     conn.execute(f'DROP TABLE IF EXISTS "{split}"')
-    over = f'COALESCE("iso3_1_{world}", "iso3_2_{world}") IS NOT NULL'
+    over = f'COALESCE("a_iso3_{world}", "b_iso3_{world}") IS NOT NULL'
     conn.execute(f"""--sql
         CREATE OR REPLACE TABLE "{out}" AS
         SELECT * EXCLUDE (geom),
@@ -315,13 +315,14 @@ def main(conn: DuckDBPyConnection, land: str, world: str) -> None:
     """)
 
     for wld in world_views:
-        for col in [f"rank_{wld}", f"adm_id_{wld}", f"iso3_1_{wld}", f"iso3_2_{wld}"]:
+        for col in [f"rank_{wld}", f"line_id_{wld}", f"a_iso3_{wld}", f"b_iso3_{wld}"]:
             conn.execute(f'ALTER TABLE "{out}" DROP COLUMN IF EXISTS "{col}"')
-    head = "adm_id, iso3_1, iso3_2"
+    head = "a_iso3, b_iso3, line_id"
     lsib = "cc1, country1, cc2, country2"
     conn.execute(f"""--sql
         CREATE OR REPLACE TABLE "{out}" AS
-        SELECT {head}, * EXCLUDE ({head}, {lsib}) FROM "{out}"
+        SELECT a_iso3, b_iso3, 0 AS level, line_id, * EXCLUDE ({head}, {lsib})
+        FROM "{out}"
     """)
 
     logger.info("%s_%s", land, world)

@@ -1,4 +1,4 @@
-﻿adm_id,cc1,country1,cc2,country2,rank,label,status,notes,line_type,rank_all,rank_intl,adm_id_all,adm_id_intl,iso3_1_all,iso3_2_all,iso3_1_intl,iso3_2_intl
+﻿line_id,cc1,country1,cc2,country2,rank,label,status,notes,line_type,rank_all,rank_intl,line_id_all,line_id_intl,a_iso3_all,b_iso3_all,a_iso3_intl,b_iso3_intl
 1,AF,AFGHANISTAN,CN,CHINA,1,,International Boundary,,,,,,,,,,
 2,AF,AFGHANISTAN,IR,IRAN,1,,International Boundary,,,,,,,,,,
 3,AF,AFGHANISTAN,PK,PAKISTAN,1,,International Boundary,,,,,,,,,AFG,PAK

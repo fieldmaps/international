@@ -101,7 +101,7 @@ def _output_layer(
     if geom != "voronoi":
         copy2(catalog_parquet(land, wld, geom), parquet)
     src = f"read_parquet('{parquet}')"
-    id_col = "adm_id" if geom == "lines" else "adm0_id"
+    id_col = "line_id" if geom == "lines" else "adm0_id"
 
     issues = [_output_gpkg(conn, src, id_col, gpkg)]
     issues.extend(edge_vertex_issues(conn, f"ST_Read('{gpkg}')", gpkg.name))
