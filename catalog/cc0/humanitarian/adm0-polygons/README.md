@@ -1,6 +1,6 @@
 # ADM0 polygons (humanitarian view, CC0)
 
-Admin level 0 areas, one feature per row group, so filtering on `iso_3` or `adm0_id` reads only the matching rows. Humanitarian view: disputed and autonomous areas grouped with a neighbouring area. Coastlines from U.S. Department of State World Polygons, licensed CC0-1.0.
+Admin level 0 areas, one feature per row group, so filtering on `iso3` or `adm0_id` reads only the matching rows. Humanitarian view: disputed and autonomous areas grouped with a neighbouring area. Coastlines from U.S. Department of State World Polygons, licensed CC0-1.0.
 
 ## Spatial Coverage
 

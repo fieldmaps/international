@@ -35,8 +35,8 @@ Source publication dates are read from the `.date` files written during download
 **`_04_catalog.main(land)`** (`app/_04_catalog/`):
 
 1. For each `world` in `["intl", "all"]`:
-   - `_04a_lines.main`, `_04b_polygons.main`, `_04c_points.main`: final output tables; points skip ids with `label_{world} = 0` (the polygon keeps its name, no map label); line geometry is each `lines_00` row clipped to land plus the full `lsib_00` line (copied from `_02_prepare`, so LSIB parts in water stay), with the same attribute join and `rank_{world}` filter; lines with `adm_id_{world}` set in `adm0_lines.csv` take that row's attributes and merge into it; lines carry `iso3_1`/`iso3_2`, the `iso_3` of the world-view unit on each side (alphabetical; `iso3_2` empty when both sides are one unit), from `_04a_lines.sides`, which splits each `lines_00` row by the `voronoi_00` faces it borders, so a line is unique on (`adm_id`, `iso3_1`, `iso3_2`); `iso3_1_{world}`/`iso3_2_{world}` in the CSV override them and merge the overridden pieces into one line
-   - `_04d_parquet.main`: writes Hilbert-sorted GeoParquet 2.0 (no bbox column, `OGC:CRS84`, ZSTD 15) with DuckDB `COPY` to `catalog/{cc0,odbl}/{humanitarian,disaggregated}/adm0-{polygons,lines,points}/` (land `usgs` → `cc0`, `osm` → `odbl`; world `intl` → `humanitarian`, `all` → `disaggregated`); polygons get one row per row group (`ROW_GROUP_SIZE_BYTES 1`, since `ROW_GROUP_SIZE` has a floor of about 2,000 rows); voronoi (intl only) goes to `outputs/`
+   - `_04a_lines.main`, `_04b_polygons.main`, `_04c_points.main`: final output tables; points skip ids with `label_{world} = 0` (the polygon keeps its name, no map label); line geometry is each `lines_00` row clipped to land plus the full `lsib_00` line (copied from `_02_prepare`, so LSIB parts in water stay), with the same attribute join and `rank_{world}` filter; lines with `line_id_{world}` set in `adm0_lines.csv` take that row's attributes and merge into it; lines carry `a_iso3`/`b_iso3`, the `iso3` of the world-view unit on each side (alphabetical; `b_iso3` empty when both sides are one unit), from `_04a_lines.sides`, which splits each `lines_00` row by the `voronoi_00` faces it borders, so a line is unique on (`line_id`, `a_iso3`, `b_iso3`); `a_iso3_{world}`/`b_iso3_{world}` in the CSV override them and merge the overridden pieces into one line; lines output `a_iso3, b_iso3, level` (always 0), `line_id`, then the CSV attributes, without the LSIB `cc1`/`country1`/`cc2`/`country2` join keys
+   - `_04d_parquet.main`: writes Hilbert-sorted GeoParquet 2.0 (`geometry` first, no bbox column, `OGC:CRS84`, ZSTD 15) with DuckDB `COPY` to `catalog/{cc0,odbl}/{humanitarian,disaggregated}/adm0-{polygons,lines,points}/` (land `usgs` → `cc0`, `osm` → `odbl`; world `intl` → `humanitarian`, `all` → `disaggregated`); polygons get one row per row group (`ROW_GROUP_SIZE_BYTES 1`, since `ROW_GROUP_SIZE` has a floor of about 2,000 rows); voronoi (intl only) goes to `outputs/`
    - `_04e_validate.main`: checks final lines/polygons/points tables (geometry validity, lon/lat bounds, no vertex within 1e-6 of ±180°/±90° but off it, ID uniqueness, attribute-join completeness, polygon topology, points-to-polygons row parity excluding `label_{world} = 0` parts) before world-scoped tables are dropped; `ST_CoverageInvalidEdges` at gap width 0 is the coverage check, since a width of 1e-5° also flags open-sea notches where a border splits a sharp coastline angle, which are expected
    - `_04f_cleanup.main`: drops per-world tables to free memory before the next world iteration
 2. `_04g_portolan.main`: builds a PMTiles file beside each catalog parquet with tylertoo, then `portolan add <collection>`, which registers the PMTiles, default style, and thumbnail
@@ -113,10 +113,14 @@ TO 'file.gdb' (FORMAT GDAL, DRIVER 'OpenFileGDB', GEOMETRY_TYPE 'MULTIPOLYGON')
 
 ```sql
 COPY (
-    SELECT * EXCLUDE (id, geom), ST_SetCRS(geom, 'OGC:CRS84') AS geometry
-    FROM "table" ORDER BY adm0_id
+    SELECT ST_SetCRS(geom, 'OGC:CRS84') AS geometry, * EXCLUDE (id, geom)
+    FROM "table"
+    ORDER BY ST_Hilbert(geom, ST_Extent(ST_MakeEnvelope(-180, -90, 180, 90)))
 )
-TO 'file.parquet' (COMPRESSION ZSTD, GEOPARQUET_VERSION V2, ROW_GROUP_SIZE 1)
+TO 'file.parquet' (
+    COMPRESSION ZSTD, COMPRESSION_LEVEL 15, GEOPARQUET_VERSION V2,
+    ROW_GROUP_SIZE_BYTES 1  -- polygons only
+)
 ```
 
 **XLSX** — attributes only (drop geom):
@@ -190,12 +194,12 @@ Re-snapshot after intentional pipeline changes (`uv run python -m app --step _03
 
 ## Publishing
 
-The catalog publishes to Source Cooperative at `s3://fieldmaps/international/`. Credentials are the temporary keys from the source.coop website, pasted into the repo-root `.env` as `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN` (with `AWS_DEFAULT_REGION="us-east-1"`, `AWS_ENDPOINT_URL="https://data.source.coop"`). Service-account `sck_` API keys can read but not write `fieldmaps/international`.
+The catalog publishes to Source Cooperative at `s3://fieldmaps/international/` as a FieldMaps service account. Save its `sck_` API key to a file only your user can read, then set `AWS_ROLE_ARN` (`arn:aws:iam::<service-account-id>:role/FullAccess`) and `AWS_WEB_IDENTITY_TOKEN_FILE` (absolute path to the key file) in the repo-root `.env`, from `.env.example`, with no `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` or `AWS_SESSION_TOKEN` in `.env` or the shell, since the AWS CLI uses those first. Needs AWS CLI 2.13 or later.
 
-Check the keys (expect `assumed-role/_default/...`):
+Check access:
 
 ```bash
-env -i HOME=$HOME PATH=$PATH bash -c 'set -a; source .env; set +a; aws sts get-caller-identity --endpoint-url https://data.source.coop/.sts'
+env -i HOME=$HOME PATH=$PATH bash -c 'set -a; source .env; set +a; aws s3 ls s3://fieldmaps/international/'
 ```
 
 Push with `--push` / `PUSH=1`: after `portolan check`, `_04_catalog.finalize()` runs `aws s3 sync` of `catalog/` to `PORTOLAN_REMOTE` with `AWS_CONFIG_FILE=aws.config` (per-part retries, classic transfer client), first everything except `versions.json`, then the `versions.json` files, skipping hidden paths. A failed upload makes `aws s3 sync` exit non-zero and the push raises. Needs the AWS CLI on PATH. To push an already-built catalog without rerunning `_04_catalog`:
@@ -204,7 +208,7 @@ Push with `--push` / `PUSH=1`: after `portolan check`, `_04_catalog.finalize()` 
 uv run python -c 'from app.config import catalog_dir; from app._04_catalog import fieldmaps_publish as p; p.push(catalog_dir)'
 ```
 
-`app/_04_catalog/fieldmaps_publish.py` is kept byte-identical with `fieldmaps/subnational` and `OCHA-DAP/cod-site`; change it in all three repos.
+`app/_04_catalog/fieldmaps_publish.py` is kept byte-identical with `fieldmaps/subnational`; change it in both repos.
 
 ## Coding preferences
 

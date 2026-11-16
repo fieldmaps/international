@@ -1,6 +1,6 @@
 # ADM0 polygons (disaggregated view, ODbL)
 
-Admin level 0 areas, one feature per row group, so filtering on `iso_3` or `adm0_id` reads only the matching rows. Disaggregated view: disputed and autonomous areas as separate features. Coastlines from OpenStreetMap land polygons, licensed ODbL-1.0.
+Admin level 0 areas, one feature per row group, so filtering on `iso3` or `adm0_id` reads only the matching rows. Disaggregated view: disputed and autonomous areas as separate features. Coastlines from OpenStreetMap land polygons, licensed ODbL-1.0.
 
 ## Spatial Coverage
 

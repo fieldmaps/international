@@ -29,14 +29,15 @@ def main(conn: DuckDBPyConnection, land: str) -> None:
         if geom == "lines":
             dup = df[df.duplicated(LINE_KEYS, keep=False)]
             if not dup.empty:
-                msg = f"{file.name}: duplicate join keys, adm_id {list(dup['adm_id'])}"
+                ids = list(dup["line_id"])
+                msg = f"{file.name}: duplicate join keys, line_id {ids}"
                 raise ValueError(msg)
-            iso3 = df.columns[df.columns.str.startswith("iso3_")]
+            iso3 = df.columns[df.columns.str.match(r"[ab]_iso3_")]
             df[iso3] = df[iso3].astype("string")
         if geom == "points":
             df["adm0_src"] = df["id"]
             df["adm0_id"] = df["adm0_src"] + "-" + land_date.replace("-", "")
-            df["iso_3_grp"] = df["iso_3_grp"].combine_first(df["iso_3"])
+            df["iso3_grp"] = df["iso3_grp"].combine_first(df["iso3"])
             df["region1_cd"] = df["region1_cd"].combine_first(df["status_cd"])
             df["region1_nm"] = df["region1_nm"].combine_first(df["status_nm"])
             df["region2_cd"] = df["region2_cd"].combine_first(df["region1_cd"])
