@@ -36,7 +36,7 @@ def _copy_parquet(
     file_out.unlink(missing_ok=True)
     conn.execute(f"""--sql
         COPY (
-            SELECT * EXCLUDE {exclude}, ST_SetCRS(geom, 'OGC:CRS84') AS geometry
+            SELECT ST_SetCRS(geom, 'OGC:CRS84') AS geometry, * EXCLUDE {exclude}
             FROM "{table}"
             ORDER BY ST_Hilbert(geom, ST_Extent(ST_MakeEnvelope(-180, -90, 180, 90)))
         ) TO '{file_out}' {opts}
