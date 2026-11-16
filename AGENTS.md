@@ -114,9 +114,13 @@ TO 'file.gdb' (FORMAT GDAL, DRIVER 'OpenFileGDB', GEOMETRY_TYPE 'MULTIPOLYGON')
 ```sql
 COPY (
     SELECT ST_SetCRS(geom, 'OGC:CRS84') AS geometry, * EXCLUDE (id, geom)
-    FROM "table" ORDER BY adm0_id
+    FROM "table"
+    ORDER BY ST_Hilbert(geom, ST_Extent(ST_MakeEnvelope(-180, -90, 180, 90)))
 )
-TO 'file.parquet' (COMPRESSION ZSTD, GEOPARQUET_VERSION V2, ROW_GROUP_SIZE 1)
+TO 'file.parquet' (
+    COMPRESSION ZSTD, COMPRESSION_LEVEL 15, GEOPARQUET_VERSION V2,
+    ROW_GROUP_SIZE_BYTES 1  -- polygons only
+)
 ```
 
 **XLSX** — attributes only (drop geom):
