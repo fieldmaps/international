@@ -43,6 +43,12 @@
       "href": "./cc0/catalog.json",
       "type": "application/json",
       "title": "CC0 (State Department World Polygons)"
+    },
+    {
+      "rel": "icon",
+      "href": "./_assets/logo-512.png",
+      "type": "image/png",
+      "title": "FieldMaps logo"
     }
   ],
   "title": "FieldMaps International Administrative Boundaries",

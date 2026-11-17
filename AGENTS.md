@@ -142,6 +142,10 @@ TO 'file.xlsx' (FORMAT GDAL, DRIVER 'XLSX')
 ## Output structure
 
 ```
+catalog/
+  catalog.json, README.md, AGENTS.md, .portolan/{config,metadata}.yaml
+  _assets/logo-512.png   (catalog logo, rel="icon" link in catalog.json)
+
 catalog/{cc0,odbl}/{humanitarian,disaggregated}/adm0-{polygons,lines,points}/
   adm0_*.parquet, adm0_*.pmtiles, adm0_*.thumb.jpg, collection.json, versions.json   (gitignored)
   README.md, AGENTS.md, styles/default.json, .portolan/metadata.yaml
@@ -152,6 +156,8 @@ outputs/adm0/{osm,usgs}/{intl,all}/
   adm0_points.{gpkg,gdb,parquet,xlsx}
   adm0_voronoi.gpkg.zip      (intl only)
 ```
+
+Change the catalog logo with `portolan logo <file> --title "FieldMaps logo"` run in `catalog/`; it replaces both the image and the link.
 
 ## Running
 
