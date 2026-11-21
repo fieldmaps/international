@@ -254,11 +254,7 @@ def discard(conn: DuckDBPyConnection, table: str) -> None:
 
 def reduce_precision(conn: DuckDBPyConnection, table: str, geom_type: str) -> None:
     """Snap ``table`` geometry to the ``XY_RESOLUTION`` grid, in place."""
-    geom = "geom"
-    if geom_type == "MultiLineString":
-        # Dissolve before rounding: union noding adds off-grid vertices.
-        geom = "ST_LineMerge(ST_Union(geom, geom))"
-    geom = f"ST_ReducePrecision({geom}, {XY_RESOLUTION})"
+    geom = f"ST_ReducePrecision(geom, {XY_RESOLUTION})"
     if geom_type.startswith("Multi"):
         geom = f"ST_Multi({geom})"
     conn.execute(f'UPDATE "{table}" SET geom = {geom}')
