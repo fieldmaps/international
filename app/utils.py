@@ -17,7 +17,6 @@ from duckdb import DuckDBPyConnection, connect
 from .config import (
     ALL_LANDS,
     PARQUET_OPTS,
-    XY_RESOLUTION,
     debug,
     download_dir,
     input_dir,
@@ -252,14 +251,6 @@ def discard(conn: DuckDBPyConnection, table: str) -> None:
     conn.execute(f'DROP TABLE IF EXISTS "{table}"')
 
 
-def reduce_precision(conn: DuckDBPyConnection, table: str, geom_type: str) -> None:
-    """Snap ``table`` geometry to the ``XY_RESOLUTION`` grid, in place."""
-    geom = f"ST_ReducePrecision(geom, {XY_RESOLUTION})"
-    if geom_type.startswith("Multi"):
-        geom = f"ST_Multi({geom})"
-    conn.execute(f'UPDATE "{table}" SET geom = {geom}')
-
-
 def has_invalid_coverage(
     conn: DuckDBPyConnection, table: str, gap_width: float = 0
 ) -> bool:
@@ -280,19 +271,14 @@ def edge_vertex_issues(
     src: str,
     label: str,
     geom: str = "geom",
-    *,
-    off_grid: bool = False,
 ) -> list[str]:
-    """Flag vertices near but off ±180/±90 and, with ``off_grid``, off the grid."""
+    """Flag vertices near but off ±180/±90."""
     near = "abs(abs({v}) - {e}) BETWEEN 1e-300 AND 1e-6"
     off = f"{near.format(v='x', e=180)} OR {near.format(v='y', e=90)}"
-    scale = round(1 / XY_RESOLUTION)
-    grid = f"x != round(x * {scale}) / {scale} OR y != round(y * {scale}) / {scale}"
     # Aggregate FILTER: DuckDB 2.0.0 drops rows on some scan WHERE filters.
-    n, sample, n_grid = conn.execute(f"""--sql
+    n, sample = conn.execute(f"""--sql
         SELECT count(*) FILTER (WHERE {off}),
-            list(format('POINT ({{}} {{}})', x, y)) FILTER (WHERE {off})[1:3],
-            {f"count(*) FILTER (WHERE {grid})" if off_grid else "0"}
+            list(format('POINT ({{}} {{}})', x, y)) FILTER (WHERE {off})[1:3]
         FROM (
             SELECT ST_X(p) AS x, ST_Y(p) AS y FROM (
                 SELECT UNNEST(ST_Dump(ST_Points(ST_GeomFromWKB(ST_AsWKB(g))))).geom AS p
@@ -300,10 +286,7 @@ def edge_vertex_issues(
             )
         )
     """).fetchall()[0]
-    issues = [f"{label}: {n} vertices off the world edge, e.g. {sample}"] if n else []
-    if n_grid:
-        issues.append(f"{label}: {n_grid} vertices off the {XY_RESOLUTION} grid")
-    return issues
+    return [f"{label}: {n} vertices off the world edge, e.g. {sample}"] if n else []
 
 
 def raise_issues(issues: list[str], context: str) -> None:

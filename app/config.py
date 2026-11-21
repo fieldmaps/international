@@ -63,8 +63,7 @@ OSM_REEFS = {"way": (43145194, 43145209), "relation": (18554868,)}
 
 # --- Export options ---
 PARQUET_OPTS = "(COMPRESSION ZSTD, COMPRESSION_LEVEL 15, GEOPARQUET_VERSION V2)"
-# Esri default lat/lon XY resolution and tolerance (0.1 mm, 1 mm), in degrees.
-XY_RESOLUTION = 1e-9
+# Esri default lat/lon XY tolerance (1 mm), in degrees.
 XY_TOLERANCE = 1e-8
 os.environ["OGR_ORGANIZE_POLYGONS"] = "ONLY_CCW"
 

@@ -1,7 +1,7 @@
 """Catalog stage modules."""
 
-from app.config import EXPORT_LAYERS, debug, tmp_dir, world_views
-from app.utils import copy_from_db, export_debug_tables, get_conn, reduce_precision
+from app.config import debug, tmp_dir, world_views
+from app.utils import copy_from_db, export_debug_tables, get_conn
 
 from . import (
     _04a_lines,
@@ -33,9 +33,6 @@ def main(land: str) -> None:
         _04a_lines.main(conn, land, world)
         _04b_polygons.main(conn, land, world)
         _04c_points.main(conn, land, world)
-        # Final tables only: rounding mid-pipeline would compound in later steps.
-        for _, geom_type, layer in EXPORT_LAYERS:
-            reduce_precision(conn, f"{land}_{layer}_{world}", geom_type)
         _04d_parquet.main(conn, land, world)
         _04e_validate.main(conn, land, world)
         _04f_cleanup.main(conn, land, world)
