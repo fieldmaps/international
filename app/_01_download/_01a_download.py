@@ -18,7 +18,7 @@ from xml.etree import ElementTree as ET
 from zipfile import ZipFile
 
 from duckdb import DuckDBPyConnection, connect
-from httpx2 import Client, Timeout
+from httpx2 import Client, HTTPError, Timeout
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app.config import (
@@ -34,6 +34,8 @@ from app.config import (
 )
 
 logger = getLogger(__name__)
+# Written last in a source folder: marks a fetched and converted copy.
+COMPLETE = ".complete"
 _retry = retry(
     stop=stop_after_attempt(6), wait=wait_exponential(multiplier=10), reraise=True
 )
@@ -214,38 +216,47 @@ def _fetch_osm_all(osm: Path) -> None:
     _fetch_reefs(osm)
 
 
-def _refresh(name: str, fetch: Callable[[Path], None]) -> bool:
-    """Fetch and convert ``name`` in ``{name}.new/``, then swap it in.
-
-    On failure the last good copy stays; returns whether the source was refreshed.
-    """
+def _fetch_staged(name: str, fetch: Callable[[Path], None]) -> bool:
+    """Fetch ``name`` into ``{name}.new/``; on network errors keep the live copy."""
     live = download_dir / name
-    new = download_dir / f"{name}.new"
     old = download_dir / f"{name}.old"
+    new = download_dir / f"{name}.new"
+    if old.exists() and not live.exists():
+        old.rename(live)
     rmtree(new, ignore_errors=True)
     new.mkdir(parents=True)
     try:
         fetch(new)
-        _convert(name, new)
-    except Exception:
+    except (HTTPError, OSError) as e:
         rmtree(new, ignore_errors=True)
-        if not (live / ".date").exists():
+        if not (live / COMPLETE).exists():
             raise
         date = (live / ".date").read_text()
-        logger.warning("%s: download failed, using copy dated %s", name, date)
+        logger.warning("%s: download failed (%r), using copy dated %s", name, e, date)
         return False
+    return True
+
+
+def _swap_in(name: str) -> None:
+    """Convert ``{name}.new/``, mark it complete, then rename it over the live copy."""
+    live = download_dir / name
+    old = download_dir / f"{name}.old"
+    new = download_dir / f"{name}.new"
+    _convert(name, new)
+    (new / COMPLETE).touch()
     rmtree(old, ignore_errors=True)
     if live.exists():
         live.rename(old)
     new.rename(live)
     rmtree(old, ignore_errors=True)
-    return True
 
 
 def main() -> None:
     """Download required input datasets, keeping the last good copy of any that fail."""
     jobs = {"lsib": _fetch_lsib, "osm": _fetch_osm_all, "usgs": _fetch_usgs}
     with ThreadPoolExecutor(max_workers=len(jobs)) as pool:
-        futures = {n: pool.submit(_refresh, n, fn) for n, fn in jobs.items()}
+        futures = {n: pool.submit(_fetch_staged, n, fn) for n, fn in jobs.items()}
     fresh = [n for n, f in futures.items() if f.result()]
+    for name in fresh:
+        _swap_in(name)
     logger.info("download: %d of %d fetched %s", len(fresh), len(jobs), fresh)
