@@ -1,14 +1,12 @@
 """Download OSM land polygons and reefs, USGS land polygons, and LSIB boundary lines.
 
-Always fetches fresh data. Source publication dates are captured atomically
-with each download (OSM Last-Modified header, LSIB metadata XML, World Polygons
-folder name) and written to ``tmp/download/{osm,usgs,lsib}/.date``. Each source
-is then converted to CRS84 GeoParquet beside its download.
+Each source is fetched into ``{source}.new/`` and swapped in only once complete.
 """
 
 import json
 import re
 import sqlite3
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from email.utils import parsedate_to_datetime
@@ -122,8 +120,6 @@ def _usgs_date(usgs: Path) -> str:
 
 @_retry
 def _fetch_usgs(usgs: Path) -> None:
-    rmtree(usgs)
-    usgs.mkdir()
     # The outer zip also ships a Deflate64 hash .txt that Python's zipfile
     # can't decompress; extract only the inner land-polygons zip we need.
     _download_zip(usgs, LAND_USGS_URL, only="*WorldPolygon*.zip")
@@ -175,28 +171,36 @@ def _reefs_sql(conn: DuckDBPyConnection, osm: Path) -> str:
     """
 
 
-def _convert(osm: Path, usgs: Path, lsib: Path) -> None:
-    """Write each download as CRS84 GeoParquet with a ``geom`` column."""
-    osm_shp = next(osm.rglob("land_polygons.shp"))
-    usgs_gpkg = next(usgs.rglob("WorldPolygons*.gpkg"))
+def _sources(conn: DuckDBPyConnection, name: str, d: Path) -> dict[Path, str]:
+    """Return the GeoParquet path and SELECT for each file of source ``name``."""
+    if name == "lsib":
+        return {d / "lsib.parquet": f"SELECT * FROM ST_Read('{d / 'LSIB.gpkg'}')"}
+    if name == "osm":
+        shp = next(d.rglob("land_polygons.shp"))
+        return {
+            d / "land.parquet": f"SELECT FID, geom FROM ST_Read('{shp}')",
+            d / "reefs.parquet": _reefs_sql(conn, d),
+        }
+    gpkg = next(d.rglob("WorldPolygons*.gpkg"))
+    # Caspian Sea is the only DoS_WP_* feature without a WP_Name.
+    return {
+        d / "land.parquet": f"""--sql
+            SELECT row_number() OVER () AS "FID", geom FROM (
+                SELECT UNNEST(ST_Dump(geom)).geom AS geom
+                FROM ST_Read('{gpkg}', layer='{_wp_layer(gpkg)}')
+                WHERE WP_Name IS NOT NULL
+            )
+        """
+    }
+
+
+def _convert(name: str, d: Path) -> None:
+    """Write each download of source ``name`` as CRS84 GeoParquet with ``geom``."""
     with connect() as conn:
         conn.execute("LOAD spatial")
         conn.execute("SET geometry_always_xy = true")
         conn.execute("SET threads = 5")
-        sources = {
-            lsib / "lsib.parquet": f"SELECT * FROM ST_Read('{lsib / 'LSIB.gpkg'}')",
-            osm / "land.parquet": f"SELECT FID, geom FROM ST_Read('{osm_shp}')",
-            # Caspian Sea is the only DoS_WP_* feature without a WP_Name.
-            usgs / "land.parquet": f"""--sql
-                SELECT row_number() OVER () AS "FID", geom FROM (
-                    SELECT UNNEST(ST_Dump(geom)).geom AS geom
-                    FROM ST_Read('{usgs_gpkg}', layer='{_wp_layer(usgs_gpkg)}')
-                    WHERE WP_Name IS NOT NULL
-                )
-            """,
-            osm / "reefs.parquet": _reefs_sql(conn, osm),
-        }
-        for dest, sql in sources.items():
+        for dest, sql in _sources(conn, name, d).items():
             conn.execute(f"""--sql
                 COPY (
                     SELECT * REPLACE (ST_SetCRS(geom, 'OGC:CRS84') AS geom)
@@ -205,23 +209,43 @@ def _convert(osm: Path, usgs: Path, lsib: Path) -> None:
             """)
 
 
-def main() -> None:
-    """Download required input datasets."""
-    osm = download_dir / "osm"
-    usgs = download_dir / "usgs"
-    lsib = download_dir / "lsib"
-    for d in [osm, usgs, lsib]:
-        d.mkdir(parents=True, exist_ok=True)
+def _fetch_osm_all(osm: Path) -> None:
+    _fetch_osm(osm)
+    _fetch_reefs(osm)
 
-    jobs = [
-        (_fetch_lsib, lsib),
-        (_fetch_osm, osm),
-        (_fetch_reefs, osm),
-        (_fetch_usgs, usgs),
-    ]
+
+def _refresh(name: str, fetch: Callable[[Path], None]) -> bool:
+    """Fetch and convert ``name`` in ``{name}.new/``, then swap it in.
+
+    On failure the last good copy stays; returns whether the source was refreshed.
+    """
+    live = download_dir / name
+    new = download_dir / f"{name}.new"
+    old = download_dir / f"{name}.old"
+    rmtree(new, ignore_errors=True)
+    new.mkdir(parents=True)
+    try:
+        fetch(new)
+        _convert(name, new)
+    except Exception:
+        rmtree(new, ignore_errors=True)
+        if not (live / ".date").exists():
+            raise
+        date = (live / ".date").read_text()
+        logger.warning("%s: download failed, using copy dated %s", name, date)
+        return False
+    rmtree(old, ignore_errors=True)
+    if live.exists():
+        live.rename(old)
+    new.rename(live)
+    rmtree(old, ignore_errors=True)
+    return True
+
+
+def main() -> None:
+    """Download required input datasets, keeping the last good copy of any that fail."""
+    jobs = {"lsib": _fetch_lsib, "osm": _fetch_osm_all, "usgs": _fetch_usgs}
     with ThreadPoolExecutor(max_workers=len(jobs)) as pool:
-        futures = [pool.submit(fn, arg) for fn, arg in jobs]
-    for f in futures:
-        f.result()
-    _convert(osm, usgs, lsib)
-    logger.info("download: %d fetched", len(jobs))
+        futures = {n: pool.submit(_refresh, n, fn) for n, fn in jobs.items()}
+    fresh = [n for n, f in futures.items() if f.result()]
+    logger.info("download: %d of %d fetched %s", len(fresh), len(jobs), fresh)
