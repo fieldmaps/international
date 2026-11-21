@@ -4,7 +4,6 @@ from logging import getLogger
 
 from duckdb import DuckDBPyConnection
 
-from app.config import GEOM_PRECISION
 from app.utils import discard
 
 logger = getLogger(__name__)
@@ -22,19 +21,13 @@ def main(conn: DuckDBPyConnection, land: str) -> None:
 
     conn.execute(f'CREATE OR REPLACE TABLE "{tmp1}" (id VARCHAR, geom GEOMETRY)')
 
-    # Boundary land: process one (land, voronoi) pair at a time. Vectorizing
-    # ST_Intersection across N candidate voronoi cells balloons GEOS internal
-    # working memory (invisible to duckdb_memory) for the 7M-vertex polygon —
-    # bound $1 materializes the WKB once but ST_Intersection's internal
-    # structures still allocate per-row. One pair per INSERT caps peak GEOS
-    # memory at ~400 MB.
+    # One (land, voronoi) pair per INSERT: vectorized ST_Intersection on the
+    # 7M-vertex land polygon balloons GEOS memory.
     fids = [
         r[0] for r in conn.execute(f'SELECT DISTINCT "FID" FROM "{land_01}"').fetchall()
     ]
     for fid in fids:
-        # Bbox-only candidate filter: ST_Envelope is a 5-point rectangle so
-        # DuckDB never deserializes the large land polygon for vectorized
-        # bbox-vs-bbox tests.
+        # Envelope-only filter, so the large land polygon is never deserialized.
         env_wkb = conn.execute(
             f'SELECT ST_AsWKB(ST_Envelope(geom)) FROM "{land_01}" WHERE "FID" = $1',
             [fid],
@@ -58,12 +51,8 @@ def main(conn: DuckDBPyConnection, land: str) -> None:
                 [vid, fid, vgeom_wkb],
             )
 
-    # Non-boundary land polygons each fall entirely within one voronoi cell.
-    # Materialize representative points first to drop the polygon GEOS buffer
-    # before the join. A vectorized join across all 441 voronoi cells x 825K
-    # points OOMs even with bbox prefilter (BLOCKWISE_NL_JOIN materializes too
-    # much intermediate state at this scale), so loop one voronoi cell at a
-    # time with the cell bound as WKB — peak ~100 MB per execute.
+    # Loop per voronoi cell with the cell bound as WKB; a vectorized
+    # points-in-cells join OOMs.
     pts_table = f"{land}_land_00_pts"
     conn.execute(f"""--sql
         CREATE OR REPLACE TABLE "{pts_table}" AS
@@ -89,8 +78,7 @@ def main(conn: DuckDBPyConnection, land: str) -> None:
     conn.execute(f"""--sql
         CREATE OR REPLACE TABLE "{tmp2}" AS
         SELECT id,
-               ST_Multi(ST_ReducePrecision(
-                   ST_Union_Agg(geom), {GEOM_PRECISION})) AS geom
+               ST_Multi(ST_Union_Agg(geom)) AS geom
         FROM "{tmp1}"
         WHERE NOT ST_IsEmpty(geom)
         GROUP BY id

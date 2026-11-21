@@ -4,7 +4,7 @@ from logging import getLogger
 
 from duckdb import DuckDBPyConnection
 
-from app.config import GEOM_PRECISION, world_views
+from app.config import world_views
 
 logger = getLogger(__name__)
 
@@ -170,11 +170,8 @@ def _clip(conn: DuckDBPyConnection, land: str, keys: list[str], tmp: str) -> Non
         SELECT {key_list}, geom FROM "{lines_00}" LIMIT 0
     """)
 
-    # Per-pair INSERT: vectorizing ST_Intersection across all lines for a
-    # continent-size land polygon balloons GEOS memory (each chunk x thread
-    # deserializes the bound polygon WKB). Bbox-prefilter candidates with
-    # ST_Envelope (5-point rect) then loop one (line, land) pair per execute,
-    # bound as WKB. Same pattern as _03d_intersection.py.
+    # One (line, land) pair per INSERT: vectorized ST_Intersection on
+    # continent-size land balloons GEOS memory.
     fids = [
         r[0] for r in conn.execute(f'SELECT DISTINCT "FID" FROM "{land_01}"').fetchall()
     ]
@@ -189,8 +186,14 @@ def _clip(conn: DuckDBPyConnection, land: str, keys: list[str], tmp: str) -> Non
         candidates = conn.execute(
             f"""--sql
             SELECT {key_list}, ST_AsWKB(geom)
-            FROM "{lines_00}"
+            FROM "{lines_00}" AS l
             WHERE ST_Intersects(ST_Envelope(geom), ST_GeomFromWKB($1))
+            AND NOT EXISTS (
+                SELECT 1 FROM lsib_00 AS s
+                WHERE s.country1 = l.country1 AND s.country2 = l.country2
+                AND s.rank::BIGINT = l.rank AND s.label IS NOT DISTINCT FROM l.label
+                AND ST_AsWKB(s.geom) = ST_AsWKB(l.geom)
+            )
             """,
             [env_wkb],
         ).fetchall()
@@ -208,7 +211,8 @@ def _clip(conn: DuckDBPyConnection, land: str, keys: list[str], tmp: str) -> Non
                 """,
                 [*vals, line_wkb, land_wkb],
             )
-    # LSIB is kept whole so boundaries running into water stay visible.
+    # LSIB rows skip clipping and stay whole, so lines into water stay visible;
+    # their clipped pieces would only add near-duplicate segments.
     conn.execute(f'INSERT INTO "{tmp}" SELECT {key_list}, geom FROM lsib_00')
 
 
@@ -217,9 +221,7 @@ def _dissolve_sql(keys: list[str], tmp: str) -> str:
     return f"""--sql
         SELECT
             {key_list},
-            ST_Multi(
-                ST_ReducePrecision(ST_Union_Agg(geom), {GEOM_PRECISION})
-            ) AS geom
+            ST_Multi(ST_LineMerge(ST_Union_Agg(geom))) AS geom
         FROM "{tmp}"
         WHERE NOT ST_IsEmpty(geom)
         GROUP BY {key_list}
@@ -247,9 +249,7 @@ def _merge(conn: DuckDBPyConnection, land: str, world: str) -> None:
             o.a_iso3,
             o.b_iso3,
             '{world}' AS wld_view,
-            ST_Multi(
-                ST_ReducePrecision(ST_Union_Agg(o.geom), {GEOM_PRECISION})
-            ) AS geom
+            ST_Multi(ST_LineMerge(ST_Union_Agg(o.geom))) AS geom
         FROM "{out}" AS o
         JOIN "{attrs}" AS b
         ON b.line_id = COALESCE(o."line_id_{world}"::INTEGER, o.line_id)
@@ -296,7 +296,7 @@ def main(conn: DuckDBPyConnection, land: str, world: str) -> None:
     conn.execute(f"""--sql
         CREATE OR REPLACE TABLE "{out}" AS
         SELECT * EXCLUDE (geom),
-            ST_Multi(ST_ReducePrecision(ST_Union_Agg(geom), {GEOM_PRECISION})) AS geom
+            ST_Multi(ST_LineMerge(ST_Union_Agg(geom))) AS geom
         FROM "{out}" WHERE {over} GROUP BY ALL
         UNION ALL BY NAME
         SELECT * FROM "{out}" WHERE NOT ({over})

@@ -4,7 +4,7 @@ from logging import getLogger
 
 from duckdb import DuckDBPyConnection
 
-from app.config import GEOM_PRECISION, world_views
+from app.config import world_views
 
 logger = getLogger(__name__)
 
@@ -19,10 +19,7 @@ def main(conn: DuckDBPyConnection, land: str, world: str) -> None:
         CREATE OR REPLACE TABLE "{out}" AS
         WITH centers AS (
             SELECT id,
-                   ST_ReducePrecision(
-                       ST_MaximumInscribedCircle(geom).center,
-                       {GEOM_PRECISION}
-                   ) AS geom
+                   ST_MaximumInscribedCircle(geom).center AS geom
             FROM "{polygons_in}"
         )
         SELECT b.* EXCLUDE (wld_view, wld_notes),
