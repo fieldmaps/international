@@ -8,7 +8,7 @@ Batch ETL pipeline that generates Administrative Level 0 (country-level) boundar
 - **pandas** — reads attribute CSVs, registered into DuckDB via `conn.register()`
 - **httpx2** + **tenacity**: download input data over HTTP/1.1, each fetch retried with exponential backoff
 - **tylertoo**, **portolan-cli**: PMTiles and STAC catalog management (portolan needs `tippecanoe` on PATH)
-- **Docker** — single-service image (`python:3.14-slim` + pip-installed DuckDB), no database server
+- **Docker**: single-service image (`python:3.14-slim`, dependencies from `uv.lock` via `uv sync --frozen`), no database server
 
 ## Pipeline overview
 
