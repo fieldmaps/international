@@ -60,6 +60,10 @@ LSIB_META_URL = "https://geodata.state.gov/geonetwork/srv/api/records/3bdb81a0-c
 OVERPASS_URL = "https://overpass-api.de/api/interpreter"
 # Scarborough Shoal and Minerva Reefs: mapped as reefs, so absent from OSM land.
 OSM_REEFS = {"way": (43145194, 43145209), "relation": (18554868,)}
+# Spots where LSIB vertices sit just off the land source's matching vertex.
+LSIB_SNAP = {"usgs": [(-58.2438, -34.1748)]}
+SNAP_WINDOW = 1e-3
+SNAP_TOL = 1e-9
 
 # --- Export options ---
 PARQUET_OPTS = "(COMPRESSION ZSTD, COMPRESSION_LEVEL 15, GEOPARQUET_VERSION V2)"

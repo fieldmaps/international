@@ -5,7 +5,7 @@ from logging import getLogger
 
 from duckdb import DuckDBPyConnection
 
-from app.config import download_dir
+from app.config import LSIB_SNAP, SNAP_TOL, SNAP_WINDOW, download_dir
 from app.utils import get_source_date, raise_issues, read_input
 
 logger = getLogger(__name__)
@@ -363,9 +363,33 @@ def _load_land(conn: DuckDBPyConnection, land: str) -> None:
         _add_reefs(conn, table)
 
 
+def _snap_lsib(conn: DuckDBPyConnection, land: str) -> None:
+    """Snap LSIB vertices near each ``LSIB_SNAP`` hint onto land vertices."""
+    for hx, hy in LSIB_SNAP.get(land, []):
+        env = (
+            f"ST_MakeEnvelope({hx - SNAP_WINDOW}, {hy - SNAP_WINDOW}, "
+            f"{hx + SNAP_WINDOW}, {hy + SNAP_WINDOW})"
+        )
+        n = conn.execute(f"""--sql
+            WITH ref AS (
+                SELECT ST_Collect(list(p)) AS g FROM (
+                    SELECT UNNEST(ST_Dump(ST_Points(ST_Boundary(geom)))).geom AS p
+                    FROM "{land}_land_00" WHERE ST_Intersects(geom, {env})
+                ) WHERE ST_Intersects(p, {env})
+            )
+            UPDATE lsib_00 SET geom = ST_Snap(lsib_00.geom, ref.g, {SNAP_TOL})
+            FROM ref
+            WHERE ST_Intersects(lsib_00.geom, {env})
+            AND ST_AsWKB(ST_Snap(lsib_00.geom, ref.g, {SNAP_TOL}))
+                != ST_AsWKB(lsib_00.geom)
+        """).fetchall()[0][0]
+        logger.info("LSIB snap near %s, %s: %d lines moved", hx, hy, n)
+
+
 def main(conn: DuckDBPyConnection, land: str) -> None:
     """Load LSIB plus the given land source into DuckDB."""
     _load_lsib(conn)
     _load_land(conn, land)
     _fix_land(conn, land)
+    _snap_lsib(conn, land)
     logger.info("preprocessing %s", land)

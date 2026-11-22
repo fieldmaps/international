@@ -20,7 +20,7 @@ Batch ETL pipeline that generates Administrative Level 0 (country-level) boundar
 
 **`_02_prepare.main(land)`** (`app/_02_prepare/`):
 
-1. `_02a_preprocessing.main(conn, land)`: loads LSIB, splits its South Sudan lines into the Kafia Kingi pieces (at the Sudan claim line in `inputs/adm0_lines.parquet`) and the Ilemi Triangle 1/2/3 pieces (faces of the Administrative and Provisional lines, west to east), relabels the 1949 Armistice Line pieces on and inside the Mount Scopus enclave (the ring around the `ISR_2` point plus the two DMZ lines) as `1949 Armistice Line Mount Scopus`, then reads the requested land source's `land.parquet` (for `osm`, appending the `reefs.parquet` polygons, which OSM maps as reefs and so leaves out of its coastline-derived land, and failing if any intersects that land), snapping land coordinates within 1e-9 of ±180°/±90° to the exact value (fails if any extends past it)
+1. `_02a_preprocessing.main(conn, land)`: loads LSIB, splits its South Sudan lines into the Kafia Kingi pieces (at the Sudan claim line in `inputs/adm0_lines.parquet`) and the Ilemi Triangle 1/2/3 pieces (faces of the Administrative and Provisional lines, west to east), relabels the 1949 Armistice Line pieces on and inside the Mount Scopus enclave (the ring around the `ISR_2` point plus the two DMZ lines) as `1949 Armistice Line Mount Scopus`, then reads the requested land source's `land.parquet` (for `osm`, appending the `reefs.parquet` polygons, which OSM maps as reefs and so leaves out of its coastline-derived land, and failing if any intersects that land), snapping land coordinates within 1e-9 of ±180°/±90° to the exact value (fails if any extends past it), and, within `SNAP_WINDOW` (1e-3°) of each `LSIB_SNAP` hint (spots where LSIB vertices sit just off the land source's matching vertex, such as ARG/URY at -58.2438, -34.1748 for `usgs`), snaps LSIB to land vertices within `SNAP_TOL` (1e-9°) with `ST_Snap`
 2. `_02b_attributes.main(conn, land)` — loads CSV attribute tables for the requested land
 
 Source publication dates are read from the `.date` files written during download via `app.utils.get_source_date(source)` (no DuckDB table). `wld_date` is the LSIB date; `wld_update` is the land source's date.
@@ -29,7 +29,7 @@ Source publication dates are read from the `.date` files written during download
 
 1. `_03a_inputs.main(conn, land)` — copies `lsib_00`/`{land}_*` from `{land}__02_prepare.duckdb`; loads `inputs/adm0_{lines,points}.parquet`; appends LSIB to lines; fails if an input line vertex sits within 1e-6 of ±180°/±90° but not on it (`utils.edge_vertex_issues`, shared with `_04e` and `_05a`)
 2. `_03b_polygonize.main(conn, land)` — unions lines → `ST_Polygonize` → joins polygons to points
-3. `_03c_continents.main(conn, land)` — identifies land masses crossed by boundary lines; fails if a null-attribute line crosses into one
+3. `_03c_continents.main(conn, land)` — dissolves the land polygons crossed by boundary lines into land masses with `ST_CoverageUnion` (World Polygons land is split along borders; each border crossing is then computed once, so neighbouring countries share it exactly), failing if the result is invalid; fails if a null-attribute line crosses into one
 4. `_03d_intersection.main(conn, land)` — clips voronoi polygons to land (per-row to cap GEOS memory)
 
 **`_04_catalog.main(land)`** (`app/_04_catalog/`):
