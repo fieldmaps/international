@@ -78,15 +78,29 @@ def main(conn: DuckDBPyConnection, land: str) -> None:
     if not rows:
         return
     boundary_wkb = rows[0][0]
+    fids = f"{land}_land_01_fids"
     conn.execute(
         f"""--sql
-        CREATE OR REPLACE TABLE "{table_out}" AS
-        SELECT *
+        CREATE OR REPLACE TABLE "{fids}" AS
+        SELECT "FID"
         FROM "{table_in1}" AS a
         WHERE ST_Intersects(a.geom, ST_GeomFromWKB($1))
         """,
         [boundary_wkb],
     )
+    # Dissolve touching land so each border crossing is computed once.
+    conn.execute(f"""--sql
+        CREATE OR REPLACE TABLE "{table_out}" AS
+        SELECT row_number() OVER () AS "FID", geom FROM (
+            SELECT UNNEST(ST_Dump(ST_CoverageUnion_Agg(geom))).geom AS geom
+            FROM "{table_in1}" WHERE "FID" IN (SELECT "FID" FROM "{fids}")
+        )
+    """)
+    invalid = conn.execute(
+        f'SELECT count(*) FROM "{table_out}" WHERE NOT ST_IsValid(geom)'
+    ).fetchall()[0][0]
+    if invalid:
+        raise_issues([f"{invalid} invalid dissolved land masses"], f"{land}_continents")
     _check_null_line_cuts(conn, land)
     discard(conn, table_in2)
     logger.info("%s_continents", land)

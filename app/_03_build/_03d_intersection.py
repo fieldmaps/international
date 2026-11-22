@@ -58,7 +58,7 @@ def main(conn: DuckDBPyConnection, land: str) -> None:
         CREATE OR REPLACE TABLE "{pts_table}" AS
         SELECT "FID", ST_PointOnSurface(geom) AS pt
         FROM "{land_00}"
-        WHERE "FID" NOT IN (SELECT "FID" FROM "{land_01}")
+        WHERE "FID" NOT IN (SELECT "FID" FROM "{land}_land_01_fids")
     """)
     voronoi_cells = conn.execute(
         f'SELECT id, ST_AsWKB(geom) FROM "{voronoi_00}"'
@@ -75,6 +75,7 @@ def main(conn: DuckDBPyConnection, land: str) -> None:
             [vid, vgeom_wkb],
         )
     conn.execute(f'DROP TABLE IF EXISTS "{pts_table}"')
+    conn.execute(f'DROP TABLE IF EXISTS "{land}_land_01_fids"')
     conn.execute(f"""--sql
         CREATE OR REPLACE TABLE "{tmp2}" AS
         SELECT id,
