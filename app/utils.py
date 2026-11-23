@@ -91,9 +91,7 @@ class _Batch:
 class ProfiledConnection:
     """Proxy around DuckDBPyConnection; logs RSS peak and duckdb delta per execute().
 
-    Consecutive execute() calls that share the same query label (e.g. a Python
-    loop emitting N INSERTs into the same table) are coalesced into one batch
-    summary line, emitted when a different label arrives or on close().
+    Consecutive execute() calls with the same query label coalesce into one line.
     """
 
     def __init__(self, conn: DuckDBPyConnection) -> None:  # noqa: D107
@@ -171,11 +169,7 @@ class ProfiledConnection:
 
 @contextlib.contextmanager
 def log_file(name: str) -> Iterator[None]:
-    """Tee root logger to ``tmp/{name}.log`` for the duration of the block.
-
-    Pair the ``name`` with the matching ``get_conn()`` name so each .duckdb
-    file written has a sibling .log capturing every log line for that scope.
-    """
+    """Tee root logger to ``tmp/{name}.log``, named like the matching ``get_conn()``."""
     tmp_dir.mkdir(parents=True, exist_ok=True)
     handler = FileHandler(tmp_dir / f"{name}.log", mode="w")
     handler.setFormatter(
@@ -193,15 +187,9 @@ def log_file(name: str) -> Iterator[None]:
 def get_conn(
     name: str, land: str | None = None, *, reset: bool = True
 ) -> DuckDBPyConnection:
-    """Create a file-based DuckDB connection with the spatial extension loaded.
+    """Open ``tmp/{land}_{name}.duckdb`` (or ``tmp/{name}.duckdb``) with spatial loaded.
 
-    The DB file is ``tmp/{name}.duckdb`` or ``tmp/{land}_{name}.duckdb`` when
-    ``land`` is given (land-first to mirror the land-outer loop), so each
-    step x land combination is fully isolated.
-
-    With ``reset=True`` (default), the .duckdb file is deleted first. Pass
-    ``reset=False`` to attach to an existing file (e.g. a snapshot restored via
-    ``cp``) for sub-step iteration via ``iter.py``.
+    ``reset=False`` attaches to an existing file instead of deleting it (``iter.py``).
     """
     prefix = f"{land}_" if land else ""
     db_path = tmp_dir / f"{prefix}{name}.duckdb"
@@ -263,29 +251,39 @@ def discard(conn: DuckDBPyConnection, table: str) -> None:
     conn.execute(f'DROP TABLE IF EXISTS "{table}"')
 
 
-def has_invalid_coverage(conn: DuckDBPyConnection, table: str) -> bool:
-    """Return True if the polygons in ``table`` have overlaps or gaps."""
+def has_invalid_coverage(
+    conn: DuckDBPyConnection, table: str, gap_width: float = 0
+) -> bool:
+    """Return True if ``table`` polygons overlap or have gaps up to ``gap_width``."""
     return bool(
-        conn.execute(f"""--sql
-            SELECT ST_CoverageInvalidEdges_Agg(geom) IS NOT NULL
+        conn.execute(
+            f"""--sql
+            SELECT ST_CoverageInvalidEdges_Agg(geom, $1) IS NOT NULL
             FROM "{table}"
-        """).fetchall()[0][0]
+            """,
+            [gap_width],
+        ).fetchall()[0][0]
     )
 
 
 def edge_vertex_issues(
-    conn: DuckDBPyConnection, src: str, label: str, geom: str = "geom"
+    conn: DuckDBPyConnection,
+    src: str,
+    label: str,
+    geom: str = "geom",
 ) -> list[str]:
-    """Return an issue if a vertex in ``src`` is within 1e-6 of ±180/±90 but off it."""
+    """Flag vertices near but off ±180/±90."""
     near = "abs(abs({v}) - {e}) BETWEEN 1e-300 AND 1e-6"
-    off = f"{near.format(v='ST_X(p)', e=180)} OR {near.format(v='ST_Y(p)', e=90)}"
+    off = f"{near.format(v='x', e=180)} OR {near.format(v='y', e=90)}"
     # Aggregate FILTER: DuckDB 2.0.0 drops rows on some scan WHERE filters.
     n, sample = conn.execute(f"""--sql
         SELECT count(*) FILTER (WHERE {off}),
-            list(ST_AsText(p)) FILTER (WHERE {off})[1:3]
+            list(format('POINT ({{}} {{}})', x, y)) FILTER (WHERE {off})[1:3]
         FROM (
-            SELECT UNNEST(ST_Dump(ST_Points(ST_GeomFromWKB(ST_AsWKB(g))))).geom AS p
-            FROM (SELECT {geom} AS g FROM {src})
+            SELECT ST_X(p) AS x, ST_Y(p) AS y FROM (
+                SELECT UNNEST(ST_Dump(ST_Points(ST_GeomFromWKB(ST_AsWKB(g))))).geom AS p
+                FROM (SELECT {geom} AS g FROM {src})
+            )
         )
     """).fetchall()[0]
     return [f"{label}: {n} vertices off the world edge, e.g. {sample}"] if n else []
@@ -306,11 +304,9 @@ def export_debug_tables(
     land: str | None = None,
     only: set[str] | None = None,
 ) -> None:
-    """Export tables under ``tmp/debug/`` mirroring the land-outer loop.
+    """Export tables to ``tmp/debug/{land}/{name}/`` (land prefix stripped).
 
-    Per-land tables go to ``tmp/debug/{land}/{name}/{table}.parquet`` (with the
-    ``{land}_`` prefix stripped from the filename); shared tables go to
-    ``tmp/debug/{name}/{table}.parquet``. Only the land and step are folders.
+    Tables without a land prefix go to ``tmp/debug/{name}/``.
     """
     debug_dir = tmp_dir / "debug"
     land_base = debug_dir / land / name if land else None

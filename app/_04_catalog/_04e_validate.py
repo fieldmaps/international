@@ -4,6 +4,7 @@ from logging import getLogger
 
 from duckdb import DuckDBPyConnection
 
+from app.config import XY_TOLERANCE
 from app.utils import edge_vertex_issues, has_invalid_coverage, raise_issues
 
 logger = getLogger(__name__)
@@ -71,6 +72,13 @@ def main(conn: DuckDBPyConnection, land: str, world: str) -> None:
     for table in (lines, polygons, points):
         issues.extend(edge_vertex_issues(conn, f'"{table}"', table))
 
+    sql = f"""--sql
+        SELECT list(line_id) FROM "{lines}"
+        WHERE ST_Length(geom) - ST_Length(ST_Union(geom, geom)) > {XY_TOLERANCE}
+    """
+    if overlapping := conn.execute(sql).fetchall()[0][0]:
+        issues.append(f"{lines}: overlapping parts in line_id {overlapping}")
+
     _check_id(conn, lines, "line_id", issues, "a_iso3", "b_iso3")
     sql = f'SELECT COUNT(*) FROM "{lines}" WHERE a_iso3 IS NULL'
     n = conn.execute(sql).fetchall()[0][0]
@@ -82,7 +90,7 @@ def main(conn: DuckDBPyConnection, land: str, world: str) -> None:
     _check_attrs_joined(conn, lines, issues)
     _check_attrs_joined(conn, polygons, issues)
 
-    if has_invalid_coverage(conn, polygons):
+    if has_invalid_coverage(conn, polygons, gap_width=XY_TOLERANCE):
         issues.append(f"{polygons}: overlaps or gaps between country polygons")
 
     attrs = f"{land}_attributes_points"

@@ -25,9 +25,8 @@ DATA_URL = "https://data.fieldmaps.io/adm0"
 LAND_WORLD = [(land, world) for land in ("osm", "usgs") for world in ("intl", "all")]
 REGRESSION_THRESHOLD = 0.05  # fraction of live countries allowed to go missing
 
-# R2 multipart uploads grow flaky with many parallel TLS streams (intermittent
-# 500s / TLS BadRecordMac), so cap concurrency, use larger parts, and retry —
-# obstore's built-in retries don't cover the TLS errors seen on large parquets.
+# Many parallel TLS streams make R2 multipart uploads fail, and obstore
+# doesn't retry TLS errors: cap concurrency, use larger parts, retry.
 CHUNK_SIZE = 64 * 1024 * 1024
 MAX_CONCURRENCY = 4
 MAX_RETRIES = 8
