@@ -29,8 +29,8 @@ Source publication dates are read from the `.date` files written during download
 
 1. `_03a_inputs.main(conn, land)` — copies `lsib_00`/`{land}_*` from `{land}__02_prepare.duckdb`; loads `inputs/adm0_{lines,points}.parquet`; appends LSIB to lines; fails if an input line vertex sits within 1e-6 of ±180°/±90° but not on it (`utils.edge_vertex_issues`, shared with `_04e` and `_05a`)
 2. `_03b_polygonize.main(conn, land)` — unions lines → `ST_Polygonize` → joins polygons to points
-3. `_03c_continents.main(conn, land)` — dissolves the land polygons crossed by boundary lines into land masses with `ST_CoverageUnion` (World Polygons land is split along borders; each border crossing is then computed once, so neighbouring countries share it exactly), failing if the result is invalid; fails if a null-attribute line crosses into one
-4. `_03d_intersection.main(conn, land)` — clips voronoi polygons to land (per-row to cap GEOS memory)
+3. `_03c_continents.main(conn, land)` — dissolves the land polygons crossed by boundary lines into land masses with `ST_CoverageUnion` (World Polygons land is split along borders; each border crossing is then computed once, so neighbouring countries share it exactly) and records the crossed land ids in `{land}_land_01_fids`, failing if the result is invalid; fails if a null-attribute line crosses into one
+4. `_03d_intersection.main(conn, land)` — clips voronoi polygons to land (per-row to cap GEOS memory); land not in `{land}_land_01_fids` joins its voronoi polygon whole
 
 **`_04_catalog.main(land)`** (`app/_04_catalog/`):
 

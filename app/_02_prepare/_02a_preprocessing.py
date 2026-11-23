@@ -383,7 +383,8 @@ def _snap_lsib(conn: DuckDBPyConnection, land: str) -> None:
             AND ST_AsWKB(ST_Snap(lsib_00.geom, ref.g, {SNAP_TOL}))
                 != ST_AsWKB(lsib_00.geom)
         """).fetchall()[0][0]
-        logger.info("LSIB snap near %s, %s: %d lines moved", hx, hy, n)
+        log = logger.info if n else logger.warning
+        log("LSIB snap near %s, %s: %d lines moved", hx, hy, n)
 
 
 def main(conn: DuckDBPyConnection, land: str) -> None:

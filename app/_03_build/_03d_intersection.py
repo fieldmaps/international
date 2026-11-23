@@ -75,7 +75,7 @@ def main(conn: DuckDBPyConnection, land: str) -> None:
             [vid, vgeom_wkb],
         )
     conn.execute(f'DROP TABLE IF EXISTS "{pts_table}"')
-    conn.execute(f'DROP TABLE IF EXISTS "{land}_land_01_fids"')
+    discard(conn, f"{land}_land_01_fids")
     conn.execute(f"""--sql
         CREATE OR REPLACE TABLE "{tmp2}" AS
         SELECT id,
