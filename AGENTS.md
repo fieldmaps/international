@@ -218,6 +218,7 @@ uv run python -c 'from app.config import catalog_dir; from app._04_catalog impor
 
 ## Coding preferences
 
+- **Decision records**: `docs/adr/` holds the topology decisions (no precision reduction, coverage dissolve, LSIB snap hints) with their measurements
 - **Verify options against docs** — before writing any non-obvious option name (DuckDB COPY TO drivers, GDAL driver options exposed via DuckDB, etc.), check official docs (duckdb.org, gdal.org); never infer from analogous APIs
 - **DuckDB spatial OOM** — avoid vectorized spatial joins on large GEOS geometries; use per-row Python loops passing geometry as a WKB parameter (`ST_GeomFromWKB($1)`) so DuckDB creates one GEOS object per `execute()` call instead of N per chunk; see memory for full patterns and benchmarks
 - **Scalar subquery vs WKB param** — `WHERE ST_Crosses(a.geom, (SELECT geom FROM t))` OOMs but `WHERE ST_Crosses(a.geom, ST_GeomFromWKB($1))` with the WKB fetched once in Python does not: DuckDB re-evaluates a scalar subquery per vectorized chunk, creating an extra GEOS object each time; a bound param is materialized once for the whole query
